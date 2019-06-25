@@ -5,23 +5,24 @@ import os
 '''This needs to be run from the src/ directory to work, if running from other directories, change data_path and pokemon_name accordingly'''
 image_dict = {}
 data_path = '../data/dataset'
-for directoryname in glob.glob(data_path + '/*'):
-    image_list = []
-    pokemon_name = directoryname[16:]
-    for filename in glob.glob(directoryname + "/*"):
-        try:
-            im=Image.open(filename)
-        except:
-            print("Broken stuff? {}".format(filename))
-            cairosvg.svg2png(url=filename, write_to=filename[:-3]+"png")
-            os.remove(filename[:-3]+"svg")
-            try: 
-                im=Image.open(filename[:-3]+"png")
+def read_data():
+    for directoryname in glob.glob(data_path + '/*'):
+        image_list = []
+        pokemon_name = directoryname[16:]
+        for filename in glob.glob(directoryname + "/*"):
+            try:
+                im=Image.open(filename)
             except:
-                print("This picture is STILL BROKEN: {}".format(filename))
-        image_list.append(im)
-        im.close()
-    image_dict[pokemon_name] = image_list
+                print("Broken stuff? {}".format(filename))
+                cairosvg.svg2png(url=filename, write_to=filename[:-3]+"png")
+                os.remove(filename[:-3]+"svg")
+                try: 
+                    im=Image.open(filename[:-3]+"png")
+                except:
+                    print("This picture is STILL BROKEN: {}".format(filename))
+            image_list.append(im)
+            im.close()
+        image_dict[pokemon_name] = image_list
 
 def rename_save_all():
     '''Small function to rename all the random file names to ones relevant to the pokemon'''
@@ -82,3 +83,9 @@ def oh_shit_go_back():
             if file_cond:
                 if not ds_cond:
                     os.remove(filename)
+
+def image_count(image_dicitonary=None):
+    count_dict = {}
+    for key in image_dicitonary.keys():
+        count_dict[key] = len(image_dicitonary[key])
+    return count_dict

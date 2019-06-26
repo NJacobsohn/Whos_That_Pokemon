@@ -2,6 +2,7 @@ from PIL import Image
 import glob
 import cairosvg
 import os
+import pickle
 '''This needs to be run from the src/ directory to work, if running from other directories, change data_path and pokemon_name accordingly'''
 image_dict = {}
 data_path = '../data/dataset'
@@ -89,3 +90,10 @@ def image_count(image_dicitonary=None):
     for key in image_dicitonary.keys():
         count_dict[key] = len(image_dicitonary[key])
     return count_dict
+
+def pickle_var(to_be_pickled=None, file_name="pickle"):
+    pickle_dir_name = "../pickles/"
+    if to_be_pickled is not None:
+        pickle.dump(to_be_pickled, open(pickle_dir_name + file_name + ".p", "wb"))
+    else:
+        return "Add file to be pickled"

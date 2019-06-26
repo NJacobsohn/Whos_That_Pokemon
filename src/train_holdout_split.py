@@ -18,10 +18,13 @@ def print_split(verbose=False):
         print("The {0} folder has {1} sub-folders.".format(name[:-2], train_val_test))
         print("-" * 20)
         if verbose:
+            total = 0
             for directoryname in glob.glob(data_path + "/" + name):
                 count = 0
                 for _ in glob.glob(directoryname + "/*"):
                     count += 1
                 print("The sub-folder {0} has {1} images".format(directoryname[-10:], count))
+                total += count
+            print("The {0} folder has {1} total images".format(name[:-2], total))
 
             

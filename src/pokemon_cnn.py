@@ -99,24 +99,27 @@ def create_data_generators(input_shape=(64, 64), batch_size=64):
         shuffle=True)
         
     holdout_generator = test_datagen.flow_from_directory(
-        '../data/test',
-        target_size=input_shape,
-        batch_size=batch_size,
-        class_mode='categorical',
-        shuffle=False)
-
-    validate_generator = test_datagen.flow_from_directory(
         '../data/val',
         target_size=input_shape,
         batch_size=batch_size,
         class_mode='categorical',
         shuffle=False)
 
-    return train_generator, validate_generator, holdout_generator
+    test_generator = test_datagen.flow_from_directory(
+        '../data/test',
+        target_size=input_shape,
+        batch_size=batch_size,
+        class_mode='categorical',
+        shuffle=False)
+
+    return train_generator, test_generator, holdout_generator
 
 
-def predict_classes(model, holdout_generator, batch_size, metrics_path):
-    Y_pred = model.predict_generator(holdout_generator, use_multiprocessing=True, verbose=1)
+def predict_classes(model, test_generator, n_test, batch_size, metrics_path):
+    Y_pred = model.predict_generator(test_generator, 
+                                    steps=n_test/batch_size,
+                                    use_multiprocessing=True, 
+                                    verbose=1)
     """
     Create confusion matrix and classification report for holdout set
     """
@@ -125,7 +128,7 @@ def predict_classes(model, holdout_generator, batch_size, metrics_path):
 
     # Create confusion matrix and save it
     cm = confusion_matrix(holdout_generator.classes, y_pred)
-    with open(metrics_path, 'wb') as f:
+    with open(metrics_path + "_cm.txt", 'wb') as f:
         pickle.dump(cm, f)
 
     # Create classification report and save it
@@ -134,7 +137,7 @@ def predict_classes(model, holdout_generator, batch_size, metrics_path):
 
     class_report = classification_report(holdout_generator.classes, y_pred, target_names=class_names)
     print(classification_report)
-    with open(metrics_path, 'w') as f:
+    with open(metrics_path + "_cr.txt", 'w') as f:
         f.write(repr(class_report))
 
 
@@ -176,9 +179,9 @@ if __name__ == "__main__":
     model_path = "../models/model_acc" + acc + ".h5"
     model.save(model_path)
     print("Saved model to \"" + model_path + "\"")
-    model_metrics = "../models/metrics/model_acc" + acc + "_cr.txt"
+    model_metrics = "../models/metrics/model_acc" + acc
 
-    predict_classes(model, holdout_generator, batch, model_metrics)
+    predict_classes(model, holdout_generator, n_holdout, batch, model_metrics)
     print("Saved CM and Classification Report to \"" + model_metrics + "\"")
 
 

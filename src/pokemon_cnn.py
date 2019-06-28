@@ -5,7 +5,10 @@ from keras.layers.convolutional import Conv2D
 from keras.utils import np_utils
 from keras import backend as K
 from keras.preprocessing.image import ImageDataGenerator
+from sklearn.metrics import classification_report, confusion_matrix
 import os
+import pickle
+import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -112,6 +115,30 @@ def create_data_generators(input_shape=(64, 64), batch_size=64):
     return train_generator, validate_generator, holdout_generator
 
 
+def predict_classes(model, holdout_generator, batch_size, metrics_path):
+    Y_pred = model.predict_generator(holdout_generator, use_multiprocessing=True, verbose=1)
+    """
+    Create confusion matrix and classification report for holdout set
+    """
+    # Take the predicted label for each observation
+    y_pred = np.argmax(Y_pred, axis=1)
+
+    # Create confusion matrix and save it
+    cm = confusion_matrix(holdout_generator.classes, y_pred)
+    with open(metrics_path, 'wb') as f:
+        pickle.dump(cm, f)
+
+    # Create classification report and save it
+    with open('../pickles/class_names.p', 'rb') as f:
+        class_names = np.array(pickle.load(f))
+
+    class_report = classification_report(holdout_generator.classes, y_pred, target_names=class_names)
+    print(classification_report)
+    with open(metrics_path, 'w') as f:
+        f.write(repr(class_report))
+
+
+
 
 
 if __name__ == "__main__":
@@ -149,7 +176,10 @@ if __name__ == "__main__":
     model_path = "../models/model_acc" + acc + ".h5"
     model.save(model_path)
     print("Saved model to \"" + model_path + "\"")
+    model_metrics = "../models/metrics/model_acc" + acc + "_cr.txt"
 
+    predict_classes(model, holdout_generator, batch, model_metrics)
+    print("Saved CM and Classification Report to \"" + model_metrics + "\"")
 
 
     #score = model.evaluate_generator(test_generator)

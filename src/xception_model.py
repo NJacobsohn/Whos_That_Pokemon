@@ -200,7 +200,7 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(os.path.abspath(data_dir), 'preview'), exist_ok=True)
         os.makedirs(model_dir, exist_ok=True)
 
-    train(train_dir, validation_dir, model_dir)  # train model
+    train(train_dir, validation_dir, train_dir, model_dir)  # train model
 
     # release memory
     k.clear_session()

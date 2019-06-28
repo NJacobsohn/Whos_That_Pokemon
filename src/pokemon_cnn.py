@@ -30,10 +30,10 @@ def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filter
     model.add(MaxPooling2D(pool_size=pool_size)) # decreases size, helps prevent overfitting
     model.add(Dropout(0.25)) # zeros out some fraction of inputs, helps prevent overfitting
 
-    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #3rd conv. layer
+    model.add(SeparableConv2D(nb_filters+32, (kernel_size[0], kernel_size[1]), padding='same')) #3rd conv. layer
     #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
-    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #4th conv. layer
+    model.add(SeparableConv2D(nb_filters+32, (kernel_size[0], kernel_size[1]), padding='same')) #4th conv. layer
     #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
 
@@ -41,10 +41,10 @@ def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filter
     model.add(Dropout(0.25))
 
     '''
-    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #5th conv. layer
+    model.add(SeparableConv2D(nb_filters+32, (kernel_size[0], kernel_size[1]), padding='same')) #5th conv. layer
     #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
-    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #6th conv. layer
+    model.add(SeparableConv2D(nb_filters+32, (kernel_size[0], kernel_size[1]), padding='same')) #6th conv. layer
     #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
     
@@ -75,12 +75,12 @@ def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filter
 
 def create_data_generators(input_shape=(64, 64), batch_size=64):
     train_datagen = ImageDataGenerator(
-     #rotation_range=6,
-     #width_shift_range=0.1,
-     #height_shift_range=0.1,
+     rotation_range=6,
+     width_shift_range=0.1,
+     height_shift_range=0.1,
      brightness_range=[0.2, 0.8],
-     #shear_range=0.1,
-     #zoom_range=0.1,
+     shear_range=0.1,
+     zoom_range=0.1,
      horizontal_flip=True
      )
 
@@ -144,9 +144,11 @@ if __name__ == "__main__":
                                            use_multiprocessing=True,
                                            verbose=1)
     print(f"Holdout loss: {metrics[0]} Accuracy: {metrics[1]}")
-
-    model.save("../models/model_no_img_aug.h5")
-    print("Saved model to disk")
+    acc = metrics[1]
+    acc = str(acc)[2:6]
+    model_path = "../models/model_acc" + acc + ".h5"
+    model.save(model_path)
+    print("Saved model to \"" + model_path + "\"")
 
 
 

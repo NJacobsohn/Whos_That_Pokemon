@@ -1,6 +1,6 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
+from keras.layers import Dense, Dropout, Activation, Flatten, SpatialDropout2D
+from keras.layers import Convolution2D, MaxPooling2D, BatchNormalization, SeparableConv2D
 from keras.layers.convolutional import Conv2D
 from keras.utils import np_utils
 from keras import backend as K
@@ -20,28 +20,44 @@ def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filter
     model.add(Conv2D(nb_filters, (kernel_size[0], kernel_size[1]),
                     padding='valid',
                     input_shape=input_shape)) #first conv. layer
+    #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
 
     model.add(Conv2D(nb_filters, (kernel_size[0], kernel_size[1]), padding='same')) #2nd conv. layer 
+    #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
 
     model.add(MaxPooling2D(pool_size=pool_size)) # decreases size, helps prevent overfitting
     model.add(Dropout(0.25)) # zeros out some fraction of inputs, helps prevent overfitting
 
-    model.add(Conv2D(nb_filters, (kernel_size[0], kernel_size[1]), padding='same')) #3rd conv. layer
+    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #3rd conv. layer
+    #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
-    model.add(Conv2D(nb_filters, (kernel_size[0], kernel_size[1]), padding='same')) #4th conv. layer
+    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #4th conv. layer
+    #model.add(BatchNormalization(axis=-1))
     model.add(Activation('tanh'))
-
 
     model.add(MaxPooling2D(pool_size=pool_size))
     model.add(Dropout(0.25))
+
+    '''
+    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #5th conv. layer
+    #model.add(BatchNormalization(axis=-1))
+    model.add(Activation('tanh'))
+    model.add(SeparableConv2D(nb_filters+16, (kernel_size[0], kernel_size[1]), padding='same')) #6th conv. layer
+    #model.add(BatchNormalization(axis=-1))
+    model.add(Activation('tanh'))
+    
+
+    model.add(MaxPooling2D(pool_size=pool_size))
+    model.add(Dropout(0.25))
+    '''
 
     model.add(Flatten()) # necessary to flatten before going into conventional dense layer
     print('Model flattened out to ', model.output_shape)
 
     model.add(Dense(neurons)) # neurons can change
-    model.add(Activation('tanh'))
+    model.add(Activation('relu'))
 
 
     model.add(Dense(nb_classes)) # 149 final nodes (one for each class)
@@ -50,35 +66,46 @@ def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filter
         
     # evaluation
     model.compile(loss='categorical_crossentropy',
-              optimizer='adadelta',
+              optimizer='adam',
               metrics=['accuracy'])
     
     return model
 # optimizers: 'adam', 'adadelta', 'sgd'
 # activation functions: 'linear', 'sigmoid', 'tanh', 'relu', 'softplus', 'softsign'
 
-def create_data_generators():
-    datagen = ImageDataGenerator()
+def create_data_generators(input_shape=(64, 64), batch_size=64):
+    train_datagen = ImageDataGenerator(
+     #rotation_range=6,
+     #width_shift_range=0.1,
+     #height_shift_range=0.1,
+     brightness_range=[0.2, 0.8],
+     #shear_range=0.1,
+     #zoom_range=0.1,
+     horizontal_flip=True
+     )
 
 
-    train_generator = datagen.flow_from_directory(
+    test_datagen = ImageDataGenerator()
+
+
+    train_generator = train_datagen.flow_from_directory(
         '../data/train',
-        target_size=(64, 64),
-        batch_size=64,
+        target_size=input_shape,
+        batch_size=batch_size,
         class_mode='categorical',
         shuffle=True)
         
-    holdout_generator = datagen.flow_from_directory(
+    holdout_generator = test_datagen.flow_from_directory(
         '../data/test',
-        target_size=(64, 64),
-        batch_size=64,
+        target_size=input_shape,
+        batch_size=batch_size,
         class_mode='categorical',
         shuffle=False)
 
-    validate_generator = datagen.flow_from_directory(
+    validate_generator = test_datagen.flow_from_directory(
         '../data/val',
-        target_size=(64, 64),
-        batch_size=64,
+        target_size=input_shape,
+        batch_size=batch_size,
         class_mode='categorical',
         shuffle=False)
 
@@ -95,26 +122,34 @@ if __name__ == "__main__":
 
     n_holdout = sum(len(files) for _, _, files in os.walk("../data/test"))
 
-    train_generator, test_generator, holdout_generator = create_data_generators()
+    in_shape = (64, 64)
+    batch = 32
+    train_generator, test_generator, holdout_generator = create_data_generators(in_shape, batch)
     
-    model = build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filters = 16, pool_size = (2, 2), kernel_size = (3, 3))
+    model = build_cnn(input_shape=(in_shape[0], in_shape[1], 3), nb_classes = 149, neurons = 128, nb_filters = 16, pool_size = (2, 2), kernel_size = (3, 3))
 
 
     model.fit_generator(
         train_generator,
-        steps_per_epoch=n_train/64,
-        epochs=5,
+        steps_per_epoch=n_train/batch,
+        epochs=10,
         verbose=1,
         validation_data=test_generator,
-        validation_steps=n_test/64,
-        workers=12,
+        validation_steps=n_test/batch,#,
+        #workers=12,
         use_multiprocessing=True)
 
     metrics = model.evaluate_generator(holdout_generator,
-                                           steps=n_holdout/64,
+                                           steps=n_holdout/batch,
                                            use_multiprocessing=True,
                                            verbose=1)
-    print(f"holdout loss: {metrics[0]} accuracy: {metrics[1]}")
+    print(f"Holdout loss: {metrics[0]} Accuracy: {metrics[1]}")
+
+    model.save("../models/model_no_img_aug.h5")
+    print("Saved model to disk")
+
+
+
     #score = model.evaluate_generator(test_generator)
     #print('Test score:', score[0])
     #print('Test accuracy:', score[1])

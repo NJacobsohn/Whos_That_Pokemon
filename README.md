@@ -60,6 +60,11 @@ So Xception is clearly better at its job than my home built one was, but is my n
     
 Now some of these make sense, like Poliwrath and Poliwhirl.
 
+
+Poliwrath                  |  Poliwhirl
+:-------------------------:|:-------------------------:
+![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)  |  ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)
+
 ![poliwrath](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)
 
 ![poliwhirl](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)

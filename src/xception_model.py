@@ -59,7 +59,7 @@ tf.set_random_seed(seed=seed)
 # hyper parameters for model
 nb_classes = 149  # number of classes
 based_model_last_block_layer_number = 126  # value is based on based model selected.
-img_width, img_height = 71, 71  # change based on the shape/structure of your images
+img_width, img_height = 299, 299  # change based on the shape/structure of your images
 batch_size = 16  # try 4, 8, 16, 32, 64, 128, 256 dependent on CPU/GPU memory capacity (powers of 2 values).
 nb_epoch = 10  # number of iteration the algorithm gets trained.
 learn_rate = 1e-4  # sgd learning rate
@@ -126,7 +126,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
                   metrics=['accuracy'])
 
     # save weights of best training epoch: monitor either val_loss or val_acc
-
+    
     top_weights_path = os.path.join(os.path.abspath(model_path), 'top_model_weights.h5')
     callbacks_list = [
         ModelCheckpoint(top_weights_path, monitor='val_acc', verbose=1, save_best_only=True),
@@ -137,15 +137,16 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     n_val = sum(len(files) for _, _, files in os.walk("../data/val"))  # : number of validation samples
 
     n_test = sum(len(files) for _, _, files in os.walk("../data/test"))
-
+    
+    """
     # Train Simple CNN
-    model.fit_generator(train_generator,
+    model_hist = model.fit_generator(train_generator,
                         steps_per_epoch=n_train,
                         epochs=nb_epoch / 5,
                         validation_data=validation_generator,
                         validation_steps=n_val,
                         callbacks=callbacks_list)
-
+    
     # verbose
     print("\nStarting to Fine Tune Model\n")
 
@@ -169,7 +170,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     model.compile(optimizer='nadam',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-
+    """
     # save weights of best training epoch: monitor either val_loss or val_acc
     final_weights_path = os.path.join(os.path.abspath(model_path), 'model_weights.h5')
     callbacks_list = [
@@ -178,7 +179,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     ]
 
     # fine-tune the model
-    model.fit_generator(train_generator,
+    model_hist = model.fit_generator(train_generator,
                         steps_per_epoch=n_train,
                         epochs=nb_epoch,
                         validation_data=validation_generator,
@@ -213,6 +214,11 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     with open(os.path.join(os.path.abspath(model_path), 'model.json'), 'w') as json_file:
         json_file.write(model_json)
 
+    numpy_loss_history = np.empty(shape=(4, nb_epoch))
+    metrics = ["loss", "acc", "val_loss", "val_acc"]
+    for idx, _ in enumerate(numpy_loss_history):
+        numpy_loss_history[idx] = model_hist.history[metrics[idx]]
+    np.savetxt("../models/{}_history.txt".format("xception"), numpy_loss_history.T, delimiter=",")
 
 if __name__ == '__main__':
     if not len(sys.argv) == 3:

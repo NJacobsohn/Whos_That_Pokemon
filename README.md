@@ -28,16 +28,38 @@ Well I'm happy to report that this project is about minimizing the crushing feel
 For the original 151 Pokemon, a wonderful kaggle user named [HarshitDwivedi](https://www.kaggle.com/thedagger) uploaded a [decently sanitized collection](https://www.kaggle.com/thedagger/pokemon-generation-one) of images. Each Pokemon had anywhere from 75-150 images in various formats and resolutions. I wrote a script to change all of the randomly generated files names (16 character hexadecimal) to the name of the Pokemon and an index number, as well as changing all of the file types to .jpeg. All other image augmentation such as resizing was done through keras' ImageDataGenerator class.
 
 ## **Visualization**
-Since the main thing I wanted to compare was how the models did versus each other, I wanted to plot a (rather large) confusion matrix for each model as well as how the accuracy and loss change per epoch on them. Let's take a look at the confusion matrices.
+Since the main thing I wanted to compare was how the models did versus each other, I wanted to plot a (rather large) confusion matrix for each model as well as how the accuracy and loss changed. 
+
+So lets look at which one of these bad boys is the smartest (higher accuracy increases per epoch)
+
+![my_cnn_acc_per_epoch](linktomy_acc_per_epoch)
+
+
+![xception_acc_per_epoch](linktoxception_acc_per_epoch)
+
+Description of which model learned quicker goes here. Dummy text YEAAAAAAAH
+
+Let's take a look at the confusion matrices.
 
 ![my_cnn_cm](linktomy_cm)
 
 
 ![xception_cm](linktoxception_cm)
 
+Xception did a fantastic job with the first generation Pokemon versus my CNN.
+So Xception is clearly better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
+
+![data_about_common_mixups_xception](link_to_mixup_data_xception)
+
+![data_about_common_mixups_mycnn](link_to_mixup_data_mycnn)
+
+
 ## **Conclusion**
 
 ## **What's Next?**
+- Gather images for the remaining ~650 Pokemon and re-run predictions on both nets
+- Re-train both nets with new, larger data sets and compare new accuracy with the new weights
+- No longer sulk in self pity because you guessed incorrectly.
 
 ## **Photo and Data Credits**
 

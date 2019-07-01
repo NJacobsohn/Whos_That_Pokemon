@@ -58,7 +58,17 @@ So Xception is clearly better at its job than my home built one was, but is my n
     Vaporeon for Seadra 33.33% of the time
     Poliwrath for Poliwhirl 30.76% of the time
     
+Now some of these make sense, like Poliwrath and Poliwhirl.
 
+![poliwrath](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)
+
+![poliwhirl](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)
+
+But the top mixup was Machoke for Beedrill and that does NOT make much sense to me.
+
+![machoke](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/machoke.png)
+
+![beedrill](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/beedrill.png)
 
 ## **Conclusion**
 
@@ -70,3 +80,4 @@ So Xception is clearly better at its job than my home built one was, but is my n
 ## **Photo and Data Credits**
 
 - [Banner:](https://www.sporcle.com/games/Chenchilla/silhouettes) Thanks to this quiz site for having this as a quiz thumbnail.
+- [All Pokemon Images:](https://archives.bulbagarden.net/wiki/) Thanks to bulbagarden's archive for having tons of pictures of all Pokemon

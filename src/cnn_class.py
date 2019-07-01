@@ -37,8 +37,8 @@ class PokemonCNN(object):
         self.test_gen = None
         self.nb_classes = None
         self._len_init()
-        #self.param_init()
-        #self.create_generators()
+        self.param_init()
+        self.create_generators()
 
     def fit(self):
         '''
@@ -214,13 +214,14 @@ if __name__ == "__main__":
     print("Creating Class")
     my_cnn = PokemonCNN(train_path, val_path, test_path)
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=10, batch_size=32, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
+    my_cnn.param_init(epochs=2, batch_size=32, image_size=(64, 64), base_filters=8, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
     my_cnn.build_model(kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1)
     print("Fitting Model")
     my_cnn.fit()
+    '''
     print("Evaluating Model")
     my_cnn.evaluate_model()
     print("Saving Model Predictions")
@@ -228,3 +229,4 @@ if __name__ == "__main__":
     print("Saving Model")
     my_cnn.save_model()
     print("Everything ran without errors!")
+    '''

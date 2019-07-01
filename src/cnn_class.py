@@ -59,13 +59,13 @@ class PokemonCNN(object):
             self.create_generators()
 
     def save_prediction_metrics(self):
+        """
+        Create confusion matrix and classification report for holdout set
+        """
         Y_pred = self.model.predict_generator(self.test_gen, 
                                     steps=self.n_test/self.batch,
                                     use_multiprocessing=True, 
                                     verbose=1)
-        """
-        Create confusion matrix and classification report for holdout set
-        """
         # Take the predicted label for each observation
         y_pred = np.argmax(Y_pred, axis=1)
 
@@ -88,7 +88,7 @@ class PokemonCNN(object):
     def create_generators(self, augmentation_strength=0.4):
         '''
         Input:
-            augmentation_strength: float between 0 and 1 (higher numbers = more augmentation, use higher than default if your model REALLY overfits)  
+            augmentation_strength: float between 0 and 1 (higher numbers = more augmentation, use higher than default if your model tends to overfit)  
         '''
         train_datagen = ImageDataGenerator(
             rotation_range=15/augmentation_strength,
@@ -123,15 +123,20 @@ class PokemonCNN(object):
             shuffle=False)
 
 
-    def build_model(self, num_blocks=1, kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25):
+    def build_model(self, kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1):
         '''
-        A block is:
-            SeparableConv2D layer with additional filters (self.nb_filters + (32 * block (i.e. first block has 32 extra, second block has 64 extra, etc.)))
-            tanh Activation layer
-            SeparableConv2D layer with additional filters (self.nb_filters + (32 * block (i.e. first block has 32 extra, second block has 64 extra, etc.)))
-            tanh Activation layer
-            MaxPooling2D layer (default to (2, 2) pool size)
-            Dropout layer (default 0.25)
+        INPUT:
+            kernel_size (tuple): set filter size
+            pool_size (tuple): set pooling size
+            dropout_perc (float between 0 and 1): percent for dropout layers (try to keep between 0.25 and 0.5)
+            num_blocks (int): number of layer blocks added to network
+                A layer block is:
+                    SeparableConv2D layer with additional filters (self.nb_filters + (32 * block (i.e. first block has 32 extra, second block has 64 extra, etc.)))
+                    tanh Activation layer
+                    SeparableConv2D layer with additional filters (self.nb_filters + (32 * block (i.e. first block has 32 extra, second block has 64 extra, etc.)))
+                    tanh Activation layer
+                    MaxPooling2D layer (default to (2, 2) pool size)
+                    Dropout layer (default 0.25)
         '''
         self.model = Sequential() # model is a linear stack of layers (don't change)
 
@@ -213,7 +218,7 @@ if __name__ == "__main__":
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
-    my_cnn.build_model(num_blocks=1, kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25)
+    my_cnn.build_model(kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1)
     print("Fitting Model")
     my_cnn.fit()
     print("Evaluating Model")

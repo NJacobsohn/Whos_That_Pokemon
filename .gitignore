@@ -1,2 +1,8 @@
 #ignore the dataset
 data/
+
+#ignore models
+models/
+
+#ignore gitignore
+./.gitignore

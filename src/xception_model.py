@@ -56,9 +56,9 @@ tf.set_random_seed(seed=seed)
 # hyper parameters for model
 nb_classes = 149  # number of classes
 based_model_last_block_layer_number = 126  # value is based on based model selected.
-img_width, img_height = 299, 299  # change based on the shape/structure of your images
-batch_size = 32  # try 4, 8, 16, 32, 64, 128, 256 dependent on CPU/GPU memory capacity (powers of 2 values).
-nb_epoch = 50  # number of iteration the algorithm gets trained.
+img_width, img_height = 71, 71  # change based on the shape/structure of your images
+batch_size = 16  # try 4, 8, 16, 32, 64, 128, 256 dependent on CPU/GPU memory capacity (powers of 2 values).
+nb_epoch = 10  # number of iteration the algorithm gets trained.
 learn_rate = 1e-4  # sgd learning rate
 momentum = .9  # sgd momentum to avoid local minimum
 transformation_ratio = .05  # how aggressive will be the data augmentation/transformation
@@ -131,13 +131,13 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     ]
     n_train = sum(len(files) for _, _, files in os.walk("../data/train"))  # : number of training samples
 
-    n_test = sum(len(files) for _, _, files in os.walk("../data/val"))  # : number of validation samples
+    n_val = sum(len(files) for _, _, files in os.walk("../data/val"))  # : number of validation samples
     # Train Simple CNN
     model.fit_generator(train_generator,
                         steps_per_epoch=n_train,
                         epochs=nb_epoch / 5,
                         validation_data=validation_generator,
-                        validation_steps=n_test,
+                        validation_steps=n_val,
                         callbacks=callbacks_list)
 
     # verbose
@@ -176,7 +176,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
                         steps_per_epoch=n_train,
                         epochs=nb_epoch,
                         validation_data=validation_generator,
-                        validation_steps=n_test,
+                        validation_steps=n_val,
                         callbacks=callbacks_list)
 
     # save model
@@ -196,7 +196,6 @@ if __name__ == '__main__':
         test_dir = os.path.join(os.path.abspath(data_dir), "test")
         validation_dir = os.path.join(os.path.abspath(data_dir), 'val')  # each class should have it's own folder
         model_dir = os.path.abspath(sys.argv[2])
-
         os.makedirs(os.path.join(os.path.abspath(data_dir), 'preview'), exist_ok=True)
         os.makedirs(model_dir, exist_ok=True)
 

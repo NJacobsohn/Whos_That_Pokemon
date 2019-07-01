@@ -47,7 +47,7 @@ class PokemonCNN(object):
         Fits built model to given params
         '''
         if self.train_gen and self.val_gen:
-            self.model.fit_generator(
+            self.hist = self.model.fit_generator(
                 self.train_gen,
                 steps_per_epoch=self.n_train/self.batch,
                 epochs=self.epochs,
@@ -209,16 +209,24 @@ class PokemonCNN(object):
 
     def make_callbacks(self):
         # Initialize tensorboard for monitoring
-        tensorboard = callbacks.TensorBoard(log_dir="models/",
+        tensorboard = callbacks.TensorBoard(log_dir="../models/",
                                                   histogram_freq=0, batch_size=self.batch,
                                                   write_graph=True, embeddings_freq=0)
 
         # Initialize model checkpoint to save best model
-        self.savename = 'models/'+"my_cnn_best"+'.hdf5'
+        self.savename = '../models/' + 'my_cnn_best' + '.hdf5'
         mc = callbacks.ModelCheckpoint(self.savename,
                                              monitor='val_loss', verbose=0, save_best_only=True,
                                              save_weights_only=False, mode='auto', period=1)
         self.callbacks = [mc, tensorboard]
+    
+    def save_history(self, hist):
+        #val_loss, val_acc, loss, acc
+        numpy_loss_history = np.empty(shape=(4, self.epochs))
+        metrics = ["loss", "acc", "val_loss", "val_acc"]
+        for idx, _ in enumerate(numpy_loss_history):
+            numpy_loss_history[idx] = hist.history[metrics[idx]]
+        np.savetxt("../models/{}_history.txt".format(self.model_name), numpy_loss_history.T, delimiter=",")
         
 
 if __name__ == "__main__":
@@ -230,7 +238,7 @@ if __name__ == "__main__":
     print("Creating Class")
     my_cnn = PokemonCNN(train_path, val_path, test_path)
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=5, batch_size=32, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
+    my_cnn.param_init(epochs=10, batch_size=32, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
@@ -241,6 +249,8 @@ if __name__ == "__main__":
     my_cnn.evaluate_model()
     print("Saving Model Predictions")
     my_cnn.save_prediction_metrics()
+    print("Saving History")
+    my_cnn.save_history(hist=my_cnn.hist)
     print("Saving Model")
     my_cnn.save_model()
     print("Everything ran without errors!")

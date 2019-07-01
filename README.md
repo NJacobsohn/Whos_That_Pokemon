@@ -65,15 +65,12 @@ Poliwrath                  |  Poliwhirl
 :-------------------------:|:-------------------------:
 ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)  |  ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)
 
-![poliwrath](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)
-
-![poliwhirl](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)
 
 But the top mixup was Machoke for Beedrill and that does NOT make much sense to me.
 
-![machoke](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/machoke.png)
-
-![beedrill](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/beedrill.png)
+Machoke                    |  Beedrill
+:-------------------------:|:-------------------------:
+![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/machoke.png)  |  ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/beedrill.png)
 
 ## **Conclusion**
 

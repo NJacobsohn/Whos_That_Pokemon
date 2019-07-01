@@ -50,12 +50,14 @@ Let's take a look at the confusion matrices.
 Xception did a fantastic job with the first generation Pokemon versus my CNN.
 So Xception is clearly better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
 
-![data_about_common_mixups_xception](link_to_mixup_data_xception)  
+![data_about_common_mixups_xception](link_to_mixup_data_xception)
+
     Machoke for Beedrill 36.36% of the time
     Eevee for Dodrio 33.33% of the time
     Primeape for Mankey 33.33% of the time
     Vaporeon for Seadra 33.33% of the time
-    Poliwrath for Poliwhirl 30.76% of the time
+    Poliwrath for Poliwhirl 30.76% of the time 
+
 Now some of these make sense, like Poliwrath and Poliwhirl.
 
 Poliwrath                  |  Poliwhirl

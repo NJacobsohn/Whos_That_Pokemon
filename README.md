@@ -1,5 +1,7 @@
 # Who's That Pokemon
 
+![banner](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/whos_that_banner.jpg)
+
 # Table of Contents
 1. [Overview](#overview)
 2. [Questions](#questions)
@@ -26,10 +28,17 @@ Well I'm happy to report that this project is about minimizing the crushing feel
 For the original 151 Pokemon, a wonderful kaggle user named [HarshitDwivedi](https://www.kaggle.com/thedagger) uploaded a [decently sanitized collection](https://www.kaggle.com/thedagger/pokemon-generation-one) of images. Each Pokemon had anywhere from 75-150 images in various formats and resolutions. I wrote a script to change all of the randomly generated files names (16 character hexadecimal) to the name of the Pokemon and an index number, as well as changing all of the file types to .jpeg. All other image augmentation such as resizing was done through keras' ImageDataGenerator class.
 
 ## **Visualization**
+Since the main thing I wanted to compare was how the models did versus each other, I wanted to plot a (rather large) confusion matrix for each model as well as how the accuracy and loss change per epoch on them. Let's take a look at the confusion matrices.
 
+![my_cnn_cm](linktomy_cm)
+
+
+![xception_cm](linktoxception_cm)
 
 ## **Conclusion**
 
 ## **What's Next?**
 
 ## **Photo and Data Credits**
+
+- [Banner:](https://www.sporcle.com/games/Chenchilla/silhouettes) Thanks to this quiz site for having this as a quiz thumbnail.

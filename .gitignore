@@ -5,4 +5,7 @@ data/
 models/
 
 #ignore gitignore
-./.gitignore
+.gitignore
+
+#ignore ipynb checkpoints
+notebooks/.ipynb_checkpoints

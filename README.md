@@ -41,7 +41,7 @@ Description of which model learned quicker goes here. Dummy text YEAAAAAAAH
 
 Let's take a look at the confusion matrices.
 
-![my_cnn_cm](linktomy_cm)
+![my_cnn_cm](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/my_cnn_cm.png)
 
 
 ![xception_cm](linktoxception_cm)

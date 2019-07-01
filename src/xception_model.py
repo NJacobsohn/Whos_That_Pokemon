@@ -47,6 +47,9 @@ from keras.models import Model
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras import backend as k
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
+import pickle
 
 # fix seed for reproducible results (only works on CPU, not GPU)
 seed = 9
@@ -132,6 +135,9 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     n_train = sum(len(files) for _, _, files in os.walk("../data/train"))  # : number of training samples
 
     n_val = sum(len(files) for _, _, files in os.walk("../data/val"))  # : number of validation samples
+
+    n_test = sum(len(files) for _, _, files in os.walk("../data/test"))
+
     # Train Simple CNN
     model.fit_generator(train_generator,
                         steps_per_epoch=n_train,
@@ -178,6 +184,29 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
                         validation_data=validation_generator,
                         validation_steps=n_val,
                         callbacks=callbacks_list)
+
+    Y_pred = model.predict_generator(test_generator, 
+                                    steps=n_test,
+                                    use_multiprocessing=True, 
+                                    verbose=1)
+    # Take the predicted label for each observation
+    y_pred = np.argmax(Y_pred, axis=1)
+    # Create confusion matrix and save it
+    cm = confusion_matrix(test_generator.classes, y_pred)
+    metric_path = "../models/"
+    with open(metric_path + "xception_cm.txt", 'wb') as f:
+        pickle.dump(cm, f)
+        print("Saved confusion matrix to \"" + metric_path + "xception_cm.txt\"")
+
+    # Create classification report and save it
+    with open('../pickles/class_names.p', 'rb') as f:
+        class_names = np.array(pickle.load(f))
+
+    class_report = classification_report(test_generator.classes, y_pred, target_names=class_names)
+    with open(metric_path + "xception_cr.txt", 'w') as f:
+        f.write(repr(class_report))
+        print("Saved classification report to \"" + metric_path + "xception_cr.txt\"")
+
 
     # save model
     model_json = model.to_json()

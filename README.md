@@ -51,13 +51,13 @@ So Xception is clearly better at its job than my home built one was, but is my n
 
 ![data_about_common_mixups_xception](link_to_mixup_data_xception)
 
-    ```
+    
     Machoke for Beedrill 36.363636% of the time
     Eevee for Dodrio 33.333333% of the time
     Primeape for Mankey 33.333333% of the time
     Vaporeon for Seadra 33.333333% of the time
     Poliwrath for Poliwhirl 30.769231% of the time
-    ```
+    
 
 
 ## **Conclusion**

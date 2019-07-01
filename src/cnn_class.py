@@ -6,6 +6,7 @@ from keras.utils import np_utils
 from keras import backend as K
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import classification_report, confusion_matrix
+from keras import callbacks
 import os
 import pickle
 import numpy as np
@@ -39,6 +40,7 @@ class PokemonCNN(object):
         self._len_init()
         self.param_init()
         self.create_generators()
+        self.make_callbacks()
 
     def fit(self):
         '''
@@ -52,7 +54,8 @@ class PokemonCNN(object):
                 verbose=1,
                 validation_data=self.val_gen,
                 validation_steps=self.n_val/self.batch,
-                use_multiprocessing=True
+                use_multiprocessing=True,
+                callbacks = self.callbacks
             )
         else:
             print("No image generators found! (This message shouldn't be seen)")
@@ -203,6 +206,19 @@ class PokemonCNN(object):
         model_path = self.model_save_path + self.model_name + ".h5"
         self.model.save(model_path)
         print("Saved model to \"" + model_path + "\"")
+
+    def make_callbacks(self):
+        # Initialize tensorboard for monitoring
+        tensorboard = callbacks.TensorBoard(log_dir="models/",
+                                                  histogram_freq=0, batch_size=self.batch,
+                                                  write_graph=True, embeddings_freq=0)
+
+        # Initialize model checkpoint to save best model
+        self.savename = 'models/'+"my_cnn_best"+'.hdf5'
+        mc = callbacks.ModelCheckpoint(self.savename,
+                                             monitor='val_loss', verbose=0, save_best_only=True,
+                                             save_weights_only=False, mode='auto', period=1)
+        self.callbacks = [mc, tensorboard]
         
 
 if __name__ == "__main__":
@@ -214,14 +230,13 @@ if __name__ == "__main__":
     print("Creating Class")
     my_cnn = PokemonCNN(train_path, val_path, test_path)
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=2, batch_size=32, image_size=(64, 64), base_filters=8, final_layer_neurons=128)
+    my_cnn.param_init(epochs=5, batch_size=32, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
     my_cnn.build_model(kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1)
     print("Fitting Model")
     my_cnn.fit()
-    '''
     print("Evaluating Model")
     my_cnn.evaluate_model()
     print("Saving Model Predictions")
@@ -229,4 +244,4 @@ if __name__ == "__main__":
     print("Saving Model")
     my_cnn.save_model()
     print("Everything ran without errors!")
-    '''
+    

@@ -93,4 +93,5 @@ Although, if you've never seen a single Pokemon in your life, a random guess onl
 ## **Photo and Data Credits**
 
 - [Banner:](https://www.sporcle.com/games/Chenchilla/silhouettes) Thanks to this quiz site for having this as a quiz thumbnail.
+- [Data:](https://www.kaggle.com/thedagger/pokemon-generation-one) Thanks to Kaggle and HarshitDwivedi for uploading images for the original 151
 - [All Pokemon Images:](https://archives.bulbagarden.net/wiki/) Thanks to bulbagarden's archive for having tons of pictures of all Pokemon

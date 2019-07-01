@@ -66,6 +66,13 @@ Poliwrath                  |  Poliwhirl
 ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)  |  ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)
 
 
+Or Primeape and Mankey.
+
+
+Primeape                  |  Mankey
+:-------------------------:|:-------------------------:
+![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/primeape.png)  |  ![](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/mankey.png)
+
 But the top mixup was Machoke for Beedrill and that does NOT make much sense to me.
 
 Machoke                    |  Beedrill

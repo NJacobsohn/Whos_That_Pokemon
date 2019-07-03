@@ -238,7 +238,7 @@ if __name__ == "__main__":
     print("Creating Class")
     my_cnn = PokemonCNN(train_path, val_path, test_path)
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=10, batch_size=32, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
+    my_cnn.param_init(epochs=10, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
@@ -254,4 +254,5 @@ if __name__ == "__main__":
     print("Saving Model")
     my_cnn.save_model()
     print("Everything ran without errors!")
+
     

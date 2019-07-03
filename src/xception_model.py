@@ -50,11 +50,17 @@ from keras import backend as k
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix
 import pickle
+import boto3
+
+s3 = boto3.resource('s3')
+s3_client = boto3.client('s3')
 
 # fix seed for reproducible results (only works on CPU, not GPU)
+"""
 seed = 9
 np.random.seed(seed=seed)
 tf.set_random_seed(seed=seed)
+"""
 
 # hyper parameters for model
 nb_classes = 149  # number of classes
@@ -102,7 +108,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
 
     validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
-    os.makedirs(os.path.join(os.path.abspath(train_data_dir), '../preview'), exist_ok=True)
+    #os.makedirs(os.path.join(os.path.abspath(train_data_dir), '../preview'), exist_ok=True)
     train_generator = train_datagen.flow_from_directory(train_data_dir,
                                                         target_size=(img_width, img_height),
                                                         batch_size=batch_size,
@@ -127,16 +133,14 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
 
     # save weights of best training epoch: monitor either val_loss or val_acc
     
-    top_weights_path = os.path.join(os.path.abspath(model_path), 'top_model_weights.h5')
-    callbacks_list = [
-        ModelCheckpoint(top_weights_path, monitor='val_acc', verbose=1, save_best_only=True),
-        EarlyStopping(monitor='val_acc', patience=5, verbose=0)
-    ]
-    n_train = sum(len(files) for _, _, files in os.walk("../data/train"))  # : number of training samples
-
-    n_val = sum(len(files) for _, _, files in os.walk("../data/val"))  # : number of validation samples
-
-    n_test = sum(len(files) for _, _, files in os.walk("../data/test"))
+    #top_weights_path = model_path + '/top_model_weights.h5'
+    #callbacks_list = [
+    #    ModelCheckpoint(top_weights_path, monitor='val_acc', verbose=1, save_best_only=True),
+    #    EarlyStopping(monitor='val_acc', patience=5, verbose=0)
+    #]
+    n_train = 6768
+    n_val = 1640
+    n_test = 2285
     
     """
     # Train Simple CNN
@@ -172,19 +176,21 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
                   metrics=['accuracy'])
     """
     # save weights of best training epoch: monitor either val_loss or val_acc
-    final_weights_path = os.path.join(os.path.abspath(model_path), 'model_weights.h5')
+    """
+    final_weights_path = model_path + '/model_weights.h5'
     callbacks_list = [
         ModelCheckpoint(final_weights_path, monitor='val_acc', verbose=1, save_best_only=True),
         EarlyStopping(monitor='val_loss', patience=5, verbose=0)
     ]
+    """
 
     # fine-tune the model
     model_hist = model.fit_generator(train_generator,
                         steps_per_epoch=n_train,
                         epochs=nb_epoch,
                         validation_data=validation_generator,
-                        validation_steps=n_val,
-                        callbacks=callbacks_list)
+                        validation_steps=n_val)#,
+                        #callbacks=callbacks_list)
 
     Y_pred = model.predict_generator(test_generator, 
                                     steps=n_test,
@@ -194,33 +200,45 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     y_pred = np.argmax(Y_pred, axis=1)
     # Create confusion matrix and save it
     cm = confusion_matrix(test_generator.classes, y_pred)
-    metric_path = "../models/"
-    with open(metric_path + "xception_cm.txt", 'wb') as f:
+    #metric_path = "../models/"
+    with open("xception_cm.txt", 'wb') as f:
         pickle.dump(cm, f)
-        print("Saved confusion matrix to \"" + metric_path + "xception_cm.txt\"")
+        print("Saved confusion matrix to \"xception_cm.txt\"")
+    s3_client.upload_file('xception_cm.txt', BucketName, 'xception_cm.txt')
+    print("Saved CM to s3 bucket!")
+
 
     # Create classification report and save it
-    with open('../pickles/class_names.p', 'rb') as f:
-        class_names = np.array(pickle.load(f))
+    class_names_pick = s3_client.get_object(Bucket="capstone2-pokemon-data", Key="class_names.p")
+    class_names = pickle.loads(class_names_pick['Body'].read())
 
     class_report = classification_report(test_generator.classes, y_pred, target_names=class_names)
-    with open(metric_path + "xception_cr.txt", 'w') as f:
+    with open("xception_cr.txt", 'w') as f:
         f.write(repr(class_report))
-        print("Saved classification report to \"" + metric_path + "xception_cr.txt\"")
+        print("Saved classification report to \"xception_cr.txt\"")
+    s3_client.upload_file('xception_cr.txt', BucketName, 'xception_cr.txt')
+    print("Saved CR to s3 bucket!")
 
-
+    
     # save model
     model_json = model.to_json()
-    with open(os.path.join(os.path.abspath(model_path), 'model.json'), 'w') as json_file:
+    print("about to save model")
+    with open('xception_model.json', 'w') as json_file:
         json_file.write(model_json)
+    s3_client.upload_file('xception_model.json', BucketName, 'xception_model.json')
+    print("Saved model.json to s3 bucket!")
 
     numpy_loss_history = np.empty(shape=(4, nb_epoch))
     metrics = ["loss", "acc", "val_loss", "val_acc"]
     for idx, _ in enumerate(numpy_loss_history):
         numpy_loss_history[idx] = model_hist.history[metrics[idx]]
-    np.savetxt("../models/{}_history.txt".format("xception"), numpy_loss_history.T, delimiter=",")
+    print("About to save epoch history to ec2")
+    np.savetxt("xception_history.txt", numpy_loss_history.T, delimiter=",")
+    s3_client.upload_file('xception_history.txt', BucketName, 'xception_history.txt')
+    print("Saved history to s3 bucket!")
 
 if __name__ == '__main__':
+    """
     if not len(sys.argv) == 3:
         print('Arguments must match:\npython code/train.py <data_dir/> <model_dir/>')
         print('Example: python code/train.py data/dogs_cats/ model/dog_cats/')
@@ -233,8 +251,20 @@ if __name__ == '__main__':
         model_dir = os.path.abspath(sys.argv[2])
         os.makedirs(os.path.join(os.path.abspath(data_dir), 'preview'), exist_ok=True)
         os.makedirs(model_dir, exist_ok=True)
+    """
+    # DON'T FORGET YOU'RE IN THE MIDST OF UPDATING THIS TO READ AND WRITE FROM/TO YOUR S3 BUCKET
+    BucketName = "capstone2-pokemon-data"
+    train_dir_s3 = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/data/train"
+    validation_dir_s3 = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/data/val"
+    test_dir_s3 = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/data/test"
+    model_dir = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/saved_models_and_metrics"
+    pickle_dir = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/class_names.p"
 
-    train(train_dir, validation_dir, train_dir, model_dir)  # train model
+    train_dir = "data/train"
+    validation_dir = "data/val"
+    test_dir = "data/test"
+
+    train(train_dir, validation_dir, test_dir, model_dir)  # train model
 
     # release memory
     k.clear_session()

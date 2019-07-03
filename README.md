@@ -129,3 +129,4 @@ As far as scaling in concerned, I feel like my accuracy would float around the s
 - [Banner:](https://www.sporcle.com/games/Chenchilla/silhouettes) Thanks to this quiz site for having this as a quiz thumbnail.
 - [Data:](https://www.kaggle.com/thedagger/pokemon-generation-one) Thanks to Kaggle and HarshitDwivedi for uploading images for the original 151.
 - [All Pokemon Images:](https://archives.bulbagarden.net/wiki/) Thanks to bulbagarden's archive for having tons of pictures of all Pokemon.
+- [Xception:](https://arxiv.org/abs/1610.02357) If you'd like to read more about Xception, the paper can be found here.

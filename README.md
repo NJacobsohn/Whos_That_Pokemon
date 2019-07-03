@@ -39,20 +39,24 @@ So lets look at which one of these bad boys is the smartest (higher accuracy inc
 
 ![xception_acc_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/accuracy_per_epoch_xception.png)
 
-We can also see what the loss looks like for each model
+While this is cool, it's much more interesting to see them side by side each other.
 
-![my_cnn_loss_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/loss_per_epoch_my_cnn.png)
+![accuracy_comparison](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/accuracy_comparison.png)
 
-![xception_loss_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/loss_per_epoch_xception.png)
+So even though using Xception saw a 5% performance increase over my CNN, it didn't really learn anything special. Its best epoch was the very first one and it only got worse from there. But the testing loss was always higher than my CNN, which made me believe that my net actually learned the data better than Xception did.  
 
-Let's take a look at the confusion matrices.
+Lets take a look at the loss  
+
+![loss_comparison](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/loss_comparison.png)
+
+But maybe they're better at predicting different things? Let's look at their confusion matrices.  
 
 ![my_cnn_cm](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/my_cnn_cm.png)
 
 ![xception_cm](linktoxception_cm)
 
-Xception did a fantastic job with the first generation Pokemon versus my CNN.
-So Xception is clearly better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
+Xception did only a slightly better job with the first generation Pokemon versus my CNN.
+So Xception is (out of the box) better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
 
 ![data_about_common_mixups_xception](link_to_mixup_data_xception)
 

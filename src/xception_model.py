@@ -191,7 +191,10 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
                         validation_data=validation_generator,
                         validation_steps=n_val)#,
                         #callbacks=callbacks_list)
+    return model, model_hist, test_generator
 
+
+def save_cm_cr(model, test_generator, n_test):
     Y_pred = model.predict_generator(test_generator, 
                                     steps=n_test,
                                     use_multiprocessing=True, 
@@ -219,7 +222,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     s3_client.upload_file('xception_cr.txt', BucketName, 'xception_cr.txt')
     print("Saved CR to s3 bucket!")
 
-    
+def save_model(model):
     # save model
     model_json = model.to_json()
     print("about to save model")
@@ -228,6 +231,7 @@ def train(train_data_dir, validation_data_dir, test_data_dir, model_path):
     s3_client.upload_file('xception_model.json', BucketName, 'xception_model.json')
     print("Saved model.json to s3 bucket!")
 
+def save_history(model_hist):
     numpy_loss_history = np.empty(shape=(4, nb_epoch))
     metrics = ["loss", "acc", "val_loss", "val_acc"]
     for idx, _ in enumerate(numpy_loss_history):
@@ -264,8 +268,19 @@ if __name__ == '__main__':
     validation_dir = "data/val"
     test_dir = "data/test"
 
-    train(train_dir, validation_dir, test_dir, model_dir)  # train model
+    n_train = 6768
+    n_val = 1640
+    n_test = 2285
 
+
+    model, model_hist, test_gen = train(train_dir, validation_dir, test_dir, model_dir)  # train model
+
+    save_cm_cr(model, test_gen, n_test)
+
+    save_model(model)
+
+    save_history(model_hist)
+    
     # release memory
     k.clear_session()
 

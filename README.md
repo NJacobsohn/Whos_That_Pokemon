@@ -89,7 +89,7 @@ Machoke                    |  Beedrill
 :-------------------------:|:-------------------------:
 ![machoke](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/machoke.png)  |  ![beedrill](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/beedrill.png)
 
-Xception seems to be all over the place, with two sensical pairs of Magmar and Charmeleon and Venonat and Venomoth:
+Xception seems to be all over the place, with two sensible pairs of Magmar and Charmeleon and Venonat and Venomoth:
 
 Magmar                   |  Charmeleon
 :-------------------------:|:-------------------------:

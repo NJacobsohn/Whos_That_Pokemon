@@ -53,36 +53,63 @@ But maybe they're better at predicting different things? Let's look at their con
 
 ![my_cnn_cm](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/my_cnn_cm.png)
 
-![xception_cm](linktoxception_cm)
+![xception_cm](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/xception_cm.png)
 
-Xception did only a slightly better job with the first generation Pokemon versus my CNN.
-So Xception is (out of the box) better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
+Xception did only a slightly better job with the first generation Pokemon versus my CNN. While the diagonal is better (more correct guesses), it looks like it has some serious problems with certain Pokemon. So Xception is (out of the box) better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
 
 ![data_about_common_mixups_xception](link_to_mixup_data_xception)
 
+    My CNN:
     Machoke for Beedrill 36.36% of the time
     Eevee for Dodrio 33.33% of the time
     Primeape for Mankey 33.33% of the time
     Vaporeon for Seadra 33.33% of the time
     Poliwrath for Poliwhirl 30.76% of the time 
 
-Now some of these make sense, like Poliwrath and Poliwhirl.
+    Xception:
+    Magmar for Charmeleon 30.77% of the time
+    Pidgeotto for Lickitung 30.77% of the time
+    Pinsir for Nidoqueen 30.77% of the time
+    Vileplume for Slowpoke 26.67% of the time
+    Venonat for Venomoth 25% of the time
+
+Now some of these make sense, like Poliwrath and Poliwhirl
 
 Poliwrath                  |  Poliwhirl
 :-------------------------:|:-------------------------:
 ![poliwrath](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwrath.png)  |  ![poliwhirl](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/poliwhirl.png)
 
-Or Primeape and Mankey.
+Or Primeape and Mankey
 
 Primeape                  |  Mankey
 :-------------------------:|:-------------------------:
 ![primeape](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/primeape.png)  |  ![mankey](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/mankey.png)
 
-But the top mixup was Machoke for Beedrill and that does NOT make much sense to me.
+But the top mixup was Machoke for Beedrill and that does NOT make much sense
 
 Machoke                    |  Beedrill
 :-------------------------:|:-------------------------:
 ![machoke](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/machoke.png)  |  ![beedrill](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/beedrill.png)
+
+Xception seems to be all over the place, with two sensical pairs of Magmar and Charmeleon and Venonat and Venomoth
+
+Magmar                   |  Charmeleon
+:-------------------------:|:-------------------------:
+![magmar](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/magmar.png)  |  ![charmeleon](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/charmeleon.png)
+
+Venonat                  |  Venomoth
+:-------------------------:|:-------------------------:
+![venonat](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/venonat.png)  |  ![venomoth](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/venomoth.png)
+
+But the rest of the pairs don't make much human sense (I'm sure Xception would have a great explanation for these if it could talk)
+
+Vileplume                  |  Slowpoke
+:-------------------------:|:-------------------------:
+![vileplume](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/vileplume.png)  |  ![slowpoke](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/slowpoke.png)
+
+Pinsir                  |  Nidoqueen
+:-------------------------:|:-------------------------:
+![pinsir](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/pinsir.png)  |  ![nidoqueen](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/nidoqueen.png)
 
 ## **Conclusion**
 

@@ -37,13 +37,13 @@ So lets look at which one of these bad boys is the smartest (higher accuracy inc
 
 ![my_cnn_acc_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/accuracy_per_epoch_my_cnn.png)
 
-![xception_acc_per_epoch](linktoxception_acc_per_epoch)
+![xception_acc_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/accuracy_per_epoch_xception.png)
 
 We can also see what the loss looks like for each model
 
 ![my_cnn_loss_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/loss_per_epoch_my_cnn.png)
 
-![xception_loss_per_epoch](linktoxception_acc_per_epoch)
+![xception_loss_per_epoch](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/loss_per_epoch_xception.png)
 
 Let's take a look at the confusion matrices.
 

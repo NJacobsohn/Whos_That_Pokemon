@@ -57,8 +57,6 @@ But maybe they're better at predicting different things? Let's look at their con
 
 Xception did only a slightly better job with the first generation Pokemon versus my CNN. While the diagonal is better (more correct guesses), it looks like it has some serious problems with certain Pokemon. So Xception is (out of the box) better at its job than my home built one was, but is my network potentially better at classifying Pokemon that Xception missed?
 
-![data_about_common_mixups_xception](link_to_mixup_data_xception)
-
     My CNN:
     Machoke for Beedrill 36.36% of the time
     Eevee for Dodrio 33.33% of the time

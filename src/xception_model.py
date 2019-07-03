@@ -256,7 +256,7 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(os.path.abspath(data_dir), 'preview'), exist_ok=True)
         os.makedirs(model_dir, exist_ok=True)
     """
-    # DON'T FORGET YOU'RE IN THE MIDST OF UPDATING THIS TO READ AND WRITE FROM/TO YOUR S3 BUCKET
+    # THIS CODE CURRENTLY UPLOADS THE METRICS TO YOUR S3 BUCKET
     BucketName = "capstone2-pokemon-data"
     train_dir_s3 = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/data/train"
     validation_dir_s3 = "https://capstone2-pokemon-data.s3-us-west-2.amazonaws.com/data/val"
@@ -280,119 +280,7 @@ if __name__ == '__main__':
     save_model(model)
 
     save_history(model_hist)
-    
+
     # release memory
     k.clear_session()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""import keras
-import os
-import numpy as np
-import pandas as pd
-from keras.applications import MobileNet, Xception
-from keras.applications.xception import preprocess_input
-from keras.layers import Dense, GlobalAveragePooling2D
-from keras.models import Model, load_model
-from keras.preprocessing.image import ImageDataGenerator
-
-size = (299, 299)
-batch = 32
-
-def create_data_generators(size=(299, 299), batch=32, preprocessing_func=preprocess_input):
-    train_datagen = ImageDataGenerator(
-     preprocessing_function=preprocess_input,
-     rotation_range=6,
-     width_shift_range=0.1,
-     height_shift_range=0.1,
-     brightness_range=[0.15, 0.85],
-     shear_range=0.1,
-     zoom_range=0.1,
-     horizontal_flip=True)
-
-
-    test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
-
-
-    train_generator = train_datagen.flow_from_directory(
-        '../data/train',
-        target_size=size,
-        batch_size=batch,
-        class_mode='categorical',
-        shuffle=True)
-        
-    holdout_generator = test_datagen.flow_from_directory(
-        '../data/test',
-        target_size=size,
-        batch_size=batch,
-        class_mode='categorical',
-        shuffle=False)
-
-    validate_generator = test_datagen.flow_from_directory(
-        '../data/val',
-        target_size=size,
-        batch_size=batch,
-        class_mode='categorical',
-        shuffle=False)
-
-    return train_generator, validate_generator, holdout_generator
-
-
-original = load_img(filename, target_size = (299,299))
-numpy_image = preprocess_input( img_to_array(original))
-image_batch = np.expand_dims(numpy_image, axis =0)
-
-
-category_df = pd.DataFrame([(len(files), os.path.basename(dirname)) for dirname, _, files in os.walk("../data/train")]).drop(0)
-category_df.columns = ["n_images", "class"]
-category_df = category_df.sort_values("class")
-weights = category_df["n_images"]/category_df["n_images"].sum()
-training_weight_dict = dict(zip(range(weights.shape[0]), weights.values))
-
-
-
-
-n_train = sum(len(files) for _, _, files in os.walk("../data/train"))  # : number of training samples
-
-n_test = sum(len(files) for _, _, files in os.walk("../data/val"))  # : number of validation samples
-
-n_holdout = sum(len(files) for _, _, files in os.walk("../data/test"))
-
-train_generator, test_generator, holdout_generator = create_data_generators(size, batch, preprocess_input)
-model = Xception(weights='imagenet', include_top=False, input_shape=size + (3,))
-model.compile(optimizer="adam", loss='categorical_crossentropy', metrics=["accuracy"])
-
-
-tensorboard = keras.callbacks.TensorBoard(log_dir="../data", histogram_freq=0, batch_size=batch, write_graph=True, embeddings_freq=0)
-
-mc = keras.callbacks.ModelCheckpoint("../data", monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto', period=1)
-callbacks = [mc, tensorboard]
-
-
-
-model.fit_generator(train_generator,
-                    class_weight=training_weight_dict,
-                    steps_per_epoch=n_train/batch,
-                    epochs=3,
-                    validation_data=test_generator,
-                    validation_steps=n_test/batch,
-                    use_multiprocessing=True,
-                    callbacks=callbacks)
-
-metrics = model.evaluate_generator(holdout_generator,
-                                           steps=n_holdout/batch,
-                                           use_multiprocessing=True,
-                                           verbose=1)
-print(f"holdout loss: {metrics[0]} accuracy: {metrics[1]}")"""

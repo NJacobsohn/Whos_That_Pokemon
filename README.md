@@ -34,7 +34,7 @@ For the original 151 Pokemon, a wonderful kaggle user named [HarshitDwivedi](htt
 
 Xception didn't get much tuning due to time constraints (thank you Amazon), so I ran it with imagenet weights with 200x200 resolution images on a GPU enhanced Amazon EC2 instance with Sagemaker. My personal CNN got a lot of tuning because I was able to run it in a reasonable amount of time on my personal machine. Each network trained for 10 epochs. I built my network in a class to allow for modular layer architecture, when I build the model, I can choose a number of blocks of layers to run it with. The network architecture looked like this:
 
-    **Block 0:**
+    Block 0:
     Convolutional2D (16 filters)
     TanH Activation
     Convolutional2D (16 filters)
@@ -42,7 +42,7 @@ Xception didn't get much tuning due to time constraints (thank you Amazon), so I
     MaxPooling2D (2x2 pooling size)
     Dropout (0.25)
 
-    **Block 1+:**
+    Block 1+:
     SeparableConvolutional2D (16 + (32 * blocknumber) filters)
     TanH Activation
     SeparableConvolutional2D (16 + (32 * blocknumber) filters)
@@ -50,13 +50,13 @@ Xception didn't get much tuning due to time constraints (thank you Amazon), so I
     MaxPooling2D (2x2 pooling size)
     Dropout (0.25)
 
-    **Final Block:**
+    Final Block:
     Dense (128 neurons)
     Relu Activation
     Dense (149 neurons, # of classes)
     Softmax Activation
 
-    **Compiled with:**
+    Compiled with:
     Loss: Categorical Crossentropy
     Optimizer: Adam
     Metrics: Accuracy

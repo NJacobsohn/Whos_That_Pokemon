@@ -61,7 +61,7 @@ Xception didn't get much tuning due to time constraints (thank you Amazon), so I
     Optimizer: Adam
     Metrics: Accuracy
 
-I tested 10 epochs with various architectures with my CNN and the best performance I found was with the above hyperparameters and just one repeatable block. So the final model had 4 convolutional layers with 16 filters on the first 2 and 48 filters on the rest.
+I tested 10 epochs with various architectures with my CNN and the best performance I found was with the above hyperparameters and just one repeatable block. So the final model had 4 convolutional layers with 16 filters on the first 2 and 48 filters on the rest. My model was trained on 64x64 resolution images, but otherwise the same exact train/validation/holdout split as Xception was.  
 
 ## **Visualization**
 

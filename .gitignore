@@ -9,3 +9,6 @@ models/
 
 #ignore ipynb checkpoints
 notebooks/.ipynb_checkpoints
+
+#ignore DS_Store
+.DS_Store

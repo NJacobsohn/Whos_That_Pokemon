@@ -7,10 +7,11 @@
 1. [Overview](#overview)
 2. [Questions](#questions)
 3. [Data](#cleaning)
-4. [Visualization](#visualization)
-5. [Conclusion](#conclusion)
-6. [What's Next?](#what's-next?)
-7. [Photo and Data Credits](#photo-and-data-credits)
+4. [Setup](#setup)
+5. [Visualization](#visualization)
+6. [Conclusion](#conclusion)
+7. [What's Next?](#what's-next?)
+8. [Photo and Data Credits](#photo-and-data-credits)
 
 ## **Overview**
 
@@ -28,6 +29,39 @@ I'm happy to report that this project is about minimizing the crushing feeling o
 ## **Data**
 
 For the original 151 Pokemon, a wonderful kaggle user named [HarshitDwivedi](https://www.kaggle.com/thedagger) uploaded a [decently sanitized collection](https://www.kaggle.com/thedagger/pokemon-generation-one) of images. Each Pokemon had anywhere from 75-150 images in various formats and resolutions. I wrote a script to change all of the randomly generated files names (16 character hexadecimal) to the name of the Pokemon and an index number, as well as changing all of the file types to .jpeg. All other image augmentation such as resizing was done through Keras' ImageDataGenerator class.
+
+## **Setup**
+
+Xception didn't get much tuning due to time constraints (thank you Amazon), so I ran it with imagenet weights with 200x200 resolution images on a GPU enhanced Amazon EC2 instance with Sagemaker. My personal CNN got a lot of tuning because I was able to run it in a reasonable amount of time on my personal machine. Each network trained for 10 epochs. I built my network in a class to allow for modular layer architecture, when I build the model, I can choose a number of blocks of layers to run it with. The network architecture looked like this:
+
+    Block 0:
+    Convolutional2D (16 filters)
+    TanH Activation
+    Convolutional2D (16 filters)
+    TanH Activation
+    MaxPooling2D (2x2 pooling size)
+    Dropout (0.25)
+
+    Block 1+:
+    SeparableConvolutional2D (16 + (32 * blocknumber) filters)
+    TanH Activation
+    SeparableConvolutional2D (16 + (32 * blocknumber) filters)
+    TanH Activation
+    MaxPooling2D (2x2 pooling size)
+    Dropout (0.25)
+
+    Final Block:
+    Dense (128 neurons)
+    Relu Activation
+    Dense (149 neurons, # of classes)
+    Softmax Activation
+
+    Compiled with:
+    Loss: Categorical Crossentropy
+    Optimizer: Adam
+    Metrics: Accuracy
+
+I tested 10 epochs with various architectures with my CNN and the best performance I found was with the above hyperparameters and just one repeatable block. So the final model had 4 convolutional layers with 16 filters on the first 2 and 48 filters on the rest.
 
 ## **Visualization**
 

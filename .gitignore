@@ -12,3 +12,6 @@ notebooks/.ipynb_checkpoints
 
 #ignore DS_Store
 .DS_Store
+
+#ignore chromdriver
+src/chromedriver

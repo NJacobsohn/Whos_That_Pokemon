@@ -21,8 +21,9 @@ def read_data():
                     im=Image.open(filename[:-3]+"png")
                 except:
                     print("This picture is STILL BROKEN: {}".format(filename))
-            image_list.append(im)
-            im.close()
+                image_list.append(im)
+                im.close()
+
         image_dict[pokemon_name] = image_list
 
 def rename_save_all():

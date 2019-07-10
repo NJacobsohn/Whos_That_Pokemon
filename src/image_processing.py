@@ -15,12 +15,15 @@ def read_data():
                 im=Image.open(filename)
             except:
                 print("Broken stuff? {}".format(filename))
-                cairosvg.svg2png(url=filename, write_to=filename[:-3]+"png")
-                os.remove(filename[:-3]+"svg")
-                try: 
-                    im=Image.open(filename[:-3]+"png")
+                try:
+                    cairosvg.svg2png(url=filename, write_to=filename[:-3]+"png")
+                    os.remove(filename[:-3]+"svg")
                 except:
-                    print("This picture is STILL BROKEN: {}".format(filename))
+                    print("Still broken image: {}".format(filename))
+                    try: 
+                        im=Image.open(filename[:-3]+"png")
+                    except:
+                        print("This picture is STILL BROKEN: {}".format(filename))
                 image_list.append(im)
                 im.close()
 
@@ -50,7 +53,10 @@ def rename_save_one(pokemon="Abra"):
         try:
             im.save(file_path, format="jpeg")
         except:
-            im = im.convert("RGB")
+            try:
+                im = im.convert("RGB")
+            except:
+                print("This file sucks: {}".format(file_path))
             im.save(file_path, format="jpeg")
         im.close()
 

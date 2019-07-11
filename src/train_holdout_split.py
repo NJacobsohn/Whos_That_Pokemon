@@ -4,10 +4,10 @@ import glob
 Once again, run this from the src folder, this makes train/test/holdout data in respective folders
 This code will also (optionally) print out the total directories in the train/test/holdout folders and total files in each subdirectory
 '''
-data_path = '../data'
+data_path = '../data/gen1'
 folder_ls = ["train/*", "val/*", "test/*"]
 def split():
-    split_folders.ratio('../data/dataset', output="../data", seed=1337, ratio=(.64, .16, .2)) #code labels train/test/holdout folders as train/val/test
+    split_folders.ratio('../data/gen1/fulldata', output="../data/gen1", seed=1337, ratio=(.64, .16, .2)) #code labels train/test/holdout folders as train/val/test
 
 def print_split(verbose=False):
     '''prints the breakdown of files and folders in train/test/holdout'''

@@ -63,23 +63,23 @@ def rename_save_one(pokemon="Abra"):
 def delete_stupid_one(pokemon="Abra"):
     '''deletes the original files as the previous function saves new ones'''
     dir_path = data_path + "/" + pokemon
-    for file in os.listdir(dir_path):
-        file_cond = file.startswith(pokemon)
-        ds_cond = file.startswith(".")
+    for img in os.listdir(dir_path):
+        file_cond = img.startswith(pokemon)
+        ds_cond = img.startswith(".")
         if not file_cond:
             if not ds_cond:
-                os.remove(dir_path+'/'+file)
+                os.remove(dir_path+'/'+img)
 
 def delete_stupid_all():
     '''deletes the original files as the previous function saves new ones'''
     for key in image_dict.keys():
         dir_path = data_path + "/" + key
-        for file in os.listdir(dir_path):
-            file_cond = file.startswith(key)
-            ds_cond = file.startswith(".")
+        for img in os.listdir(dir_path):
+            file_cond = img.startswith(key)
+            ds_cond = img.startswith(".")
             if not file_cond:
                 if not ds_cond:
-                    os.remove(dir_path+'/'+file)
+                    os.remove(dir_path+'/'+img)
 
 
 def oh_shit_go_back():

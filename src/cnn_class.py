@@ -32,14 +32,20 @@ class PokemonCNN(object):
         self.test_path = test_path
         self.model_type = model_type
         if self.model_type.lower() != 'xception':
-            self.model_build_function = self.build_cnn_model
+            self.cnn_init()
         elif self.model_type.lower() == 'xception':
-            self.model_build_function = self.build_xception_model
-            self.xception = True
-        self._len_init()
+            self.xception_init()
+        self.len_init()
+
+
+    def cnn_init(self):
+        
         self.param_init()
         self.create_generators()
         self.make_callbacks()
+
+    def xception_init(self):
+        pass
 
     def fit(self):
         '''
@@ -189,7 +195,7 @@ class PokemonCNN(object):
             layer.trainable = False
         self.model.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy', self.top_3_accuracy, 'top_k_categorical_accuracy'])
 
-    def _len_init(self):
+    def len_init(self):
         self.n_train = sum(len(files) for _, _, files in os.walk(self.train_path))  # number of training samples
         self.n_val = sum(len(files) for _, _, files in os.walk(self.val_path))  # number of validation samples
         self.n_test = sum(len(files) for _, _, files in os.walk(self.test_path)) # number of test samples

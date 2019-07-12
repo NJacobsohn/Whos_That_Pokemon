@@ -33,8 +33,11 @@ class PokemonCNN(object):
         self.model_type = model_type
         if self.model_type.lower() != 'xception':
             self.cnn_init()
+            self.xception = False
         elif self.model_type.lower() == 'xception':
             self.xception_init()
+            self.xception = True
+            self.model_name = "xception"
         self.len_init()
 
 
@@ -45,7 +48,9 @@ class PokemonCNN(object):
         self.make_callbacks()
 
     def xception_init(self):
-        pass
+        self.param_init()
+        self.create_generators()
+        self.make_callbacks()
 
     def fit(self):
         '''
@@ -98,37 +103,71 @@ class PokemonCNN(object):
         Input:
             augmentation_strength: float between 0 and 1 (higher numbers = more augmentation, use higher than default if your model tends to overfit)  
         '''
-        train_datagen = ImageDataGenerator(
-            rotation_range=15/augmentation_strength,
-            width_shift_range=augmentation_strength/4,
-            height_shift_range=augmentation_strength/4,
-            brightness_range=[0.2, 0.8],
-            shear_range=augmentation_strength/4,
-            zoom_range=augmentation_strength/4,
-            horizontal_flip=True)
+        if not self.xception:
+            train_datagen = ImageDataGenerator(
+                rotation_range=15/augmentation_strength,
+                width_shift_range=augmentation_strength/4,
+                height_shift_range=augmentation_strength/4,
+                brightness_range=[0.2, 0.8],
+                shear_range=augmentation_strength/4,
+                zoom_range=augmentation_strength/4,
+                horizontal_flip=True)
 
-        test_datagen = ImageDataGenerator()
+            test_datagen = ImageDataGenerator()
 
-        self.train_gen = train_datagen.flow_from_directory(
-            self.train_path,
-            target_size=self.image_size,
-            batch_size=self.batch,
-            class_mode='categorical',
-            shuffle=True)
+            self.train_gen = train_datagen.flow_from_directory(
+                self.train_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=True)
         
-        self.val_gen = test_datagen.flow_from_directory(
-            self.val_path,
-            target_size=self.image_size,
-            batch_size=self.batch,
-            class_mode='categorical',
-            shuffle=False)
+            self.val_gen = test_datagen.flow_from_directory(
+                self.val_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=False)
 
-        self.test_gen = test_datagen.flow_from_directory(
-            self.test_path,
-            target_size=self.image_size,
-            batch_size=self.batch,
-            class_mode='categorical',
-            shuffle=False)
+            self.test_gen = test_datagen.flow_from_directory(
+                self.test_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=False)
+
+        if self.xception:
+            train_datagen = ImageDataGenerator(rescale=1. / 255,
+                                       rotation_range=augmentation_strength,
+                                       shear_range=augmentation_strength,
+                                       zoom_range=augmentation_strength,
+                                       cval=augmentation_strength,
+                                       horizontal_flip=True,
+                                       vertical_flip=True)
+
+            test_datagen = ImageDataGenerator(rescale=1. / 255)
+
+    
+            self.train_gen = train_datagen.flow_from_directory(
+                self.train_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=True)
+   
+            self.val_gen = test_datagen.flow_from_directory(
+                self.val_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=False)
+
+            self.test_gen = test_datagen.flow_from_directory(
+                self.test_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=False)
 
 
     def build_cnn_model(self, kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1, custom_weights=None):
@@ -202,11 +241,16 @@ class PokemonCNN(object):
         self.nb_classes = sum(len(dirnames) for _, dirnames, _ in os.walk(self.train_path))
 
     def param_init(self, epochs=10, batch_size=32, image_size=(64, 64), base_filters=16, final_layer_neurons=128):
+        if self.xception:
+            self.image_size = (299, 299)
+            self.learning_rate = 1e-4
+            self.momentum = 0.9
+        else:
+            self.batch = batch_size
+            self.image_size = image_size
+            self.nb_filters = base_filters
+            self.neurons = final_layer_neurons
         self.epochs = epochs
-        self.batch = batch_size
-        self.image_size = image_size
-        self.nb_filters = base_filters
-        self.neurons = final_layer_neurons
 
     def evaluate_model(self):
         '''

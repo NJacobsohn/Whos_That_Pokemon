@@ -32,11 +32,11 @@ class PokemonCNN(object):
         self.test_path = test_path
         self.model_type = model_type
         if self.model_type.lower() != 'xception':
-            self.cnn_init()
             self.xception = False
+            self.cnn_init()
         elif self.model_type.lower() == 'xception':
-            self.xception_init()
             self.xception = True
+            self.xception_init()
             self.model_name = "xception"
         self.len_init()
 
@@ -97,6 +97,12 @@ class PokemonCNN(object):
         with open(metric_path + "_cr.txt", 'w') as f:
             f.write(repr(class_report))
             print("Saved classification report to \"" + metric_path + "_cr.txt\"")
+
+    def build_model(self, kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1, custom_weights=None):
+        if self.xception:
+            self.build_xception_model()
+        else:
+            self.build_cnn_model(kernel_size=kernel_size, pool_size=pool_size, dropout_perc=dropout_perc, num_blocks=num_blocks, custom_weights=custom_weights)
 
     def create_generators(self, augmentation_strength=0.4):
         '''
@@ -170,7 +176,7 @@ class PokemonCNN(object):
                 shuffle=False)
 
 
-    def build_cnn_model(self, kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1, custom_weights=None):
+    def build_cnn_model(self, kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1, custom_weights=None):
         '''
         INPUT:
             kernel_size (tuple): set filter size
@@ -196,7 +202,7 @@ class PokemonCNN(object):
         self.model.add(Activation('tanh', name="act2_b1"))
 
         self.model.add(MaxPooling2D(pool_size=pool_size, name="maxpool_b1")) # decreases size, helps prevent overfitting
-        self.model.add(Dropout(droupout_perc, name="dropout_b1")) # zeros out some fraction of inputs, helps prevent overfitting
+        self.model.add(Dropout(dropout_perc, name="dropout_b1")) # zeros out some fraction of inputs, helps prevent overfitting
 
 
         for block_num in range(num_blocks):
@@ -206,7 +212,7 @@ class PokemonCNN(object):
             self.model.add(SeparableConv2D(self.nb_filters+filter_augmentation, (kernel_size[0], kernel_size[1]), padding='same', name="sepconv2_b{}".format(block_num +2))) #4th conv. layer
             self.model.add(Activation('tanh', name="act2_b{}".format(block_num +2)))
             self.model.add(MaxPooling2D(pool_size=pool_size, name="maxpool_b{}".format(block_num + 2)))
-            self.model.add(Dropout(droupout_perc, name="dropout_b{}".format(block_num + 2)))
+            self.model.add(Dropout(dropout_perc, name="dropout_b{}".format(block_num + 2)))
 
         self.model.add(Flatten()) # necessary to flatten before going into conventional dense layer
         print('Model flattened out to ', self.model.output_shape)
@@ -245,6 +251,7 @@ class PokemonCNN(object):
             self.image_size = (299, 299)
             self.learning_rate = 1e-4
             self.momentum = 0.9
+            self.batch = 16
         else:
             self.batch = batch_size
             self.image_size = image_size
@@ -308,13 +315,13 @@ if __name__ == "__main__":
     weight_path = "../models/gen1_grouped_test_weights.h5"
 
     print("Creating Class")
-    my_cnn = PokemonCNN(train_path, val_path, test_path, model_name="gen1_grouped_100epochs", model_type="CNN")#, weight_path=weight_path)
+    my_cnn = PokemonCNN(train_path, val_path, test_path, model_name="xception", model_type="xception")#, custom_weights=weight_path)
     print("Initializing Parameters")
     my_cnn.param_init(epochs=100, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
-    my_cnn.build_cnn_model(kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1)
+    my_cnn.build_model(kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1)
     print("Fitting Model")
     my_cnn.fit()
     print("Evaluating Model")
@@ -326,5 +333,3 @@ if __name__ == "__main__":
     print("Saving Weights")
     my_cnn.save_weights()
     print("Everything ran without errors!")
-
-    

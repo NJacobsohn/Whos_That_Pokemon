@@ -1,7 +1,8 @@
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten, SpatialDropout2D
+from keras.models import Sequential, Model
+from keras.layers import Dense, Dropout, Activation, Flatten, SpatialDropout2D, GlobalAveragePooling2D
 from keras.layers import Convolution2D, MaxPooling2D, BatchNormalization, SeparableConv2D
 from keras.layers.convolutional import Conv2D
+from keras.applications import Xception
 from keras.utils import np_utils
 from keras import metrics
 from keras import backend as K
@@ -30,10 +31,11 @@ class PokemonCNN(object):
         self.val_path = val_path
         self.test_path = test_path
         self.model_type = model_type
-        if self.model_type.lower() == "cnn":
+        if self.model_type.lower() != 'xception':
             self.model_build_function = self.build_cnn_model
         elif self.model_type.lower() == 'xception':
             self.model_build_function = self.build_xception_model
+            self.xception = True
         self._len_init()
         self.param_init()
         self.create_generators()
@@ -177,7 +179,15 @@ class PokemonCNN(object):
         return metrics.top_k_categorical_accuracy(y_true, y_pred, k=3)
 
     def build_xception_model(self):
-        pass
+        base_model = Xception(input_shape=(self.image_size[0], self.image_size[1], 3), weights='imagenet', include_top=False)
+
+        x = base_model.output
+        x = GlobalAveragePooling2D()(x)
+        predictions = Dense(self.nb_classes, activation='softmax')(x)
+        self.model = Model(base_model.input, predictions)
+        for layer in self.model.layers:
+            layer.trainable = False
+        self.model.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy', self.top_3_accuracy, 'top_k_categorical_accuracy'])
 
     def _len_init(self):
         self.n_train = sum(len(files) for _, _, files in os.walk(self.train_path))  # number of training samples
@@ -248,13 +258,13 @@ if __name__ == "__main__":
     weight_path = "../models/gen1_grouped_test_weights.h5"
 
     print("Creating Class")
-    my_cnn = PokemonCNN(train_path, val_path, test_path, model_name="gen1_grouped_3blocks_doubleres", model_type="CNN")#, weight_path=weight_path)
+    my_cnn = PokemonCNN(train_path, val_path, test_path, model_name="gen1_grouped_100epochs", model_type="CNN")#, weight_path=weight_path)
     print("Initializing Parameters")
     my_cnn.param_init(epochs=100, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
-    my_cnn.build_cnn_model(kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=2)
+    my_cnn.build_cnn_model(kernel_size=(3, 3), pool_size=(2, 2), droupout_perc=0.25, num_blocks=1)
     print("Fitting Model")
     my_cnn.fit()
     print("Evaluating Model")

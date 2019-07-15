@@ -52,7 +52,7 @@ def make_master_dict(grouped_pokemon_list):
         master_dict[evolution_line] = group
     return master_dict
 
-def make_grouped_data_copy(master_dict, path_to_data='../data/dataset/', path_to_new_data="../data/gen1/fulldata/"):
+def make_grouped_data_copy(master_dict, path_to_data='../data/dataset/', path_to_new_data="../data/gen1m/fulldata/"):
     for master_dir, evo_line in master_dict.items():
         print("Current Directory: {}".format(master_dir))
         destination_directory_path = path_to_new_data + master_dir

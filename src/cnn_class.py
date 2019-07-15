@@ -177,15 +177,16 @@ class PokemonCNN(object):
                     MaxPooling2D layer (default to (2, 2) pool size)
                     Dropout layer (default 0.25)
         '''
+        activation_func = 'tanh' #LeakyReLU() #usually 'tanh'
         self.model = Sequential() # model is a linear stack of layers (don't change)
 
         self.model.add(Conv2D(self.nb_filters, (kernel_size[0], kernel_size[1]),
                     padding='valid',
                     input_shape=(self.image_size[0], self.image_size[1], 3), name="conv1_b1")) #first conv. layer
-        self.model.add(Activation('tanh', name="act1_b1"))
+        self.model.add(Activation(activation_func, name="act1_b1"))
 
         self.model.add(Conv2D(self.nb_filters, (kernel_size[0], kernel_size[1]), padding='same', name="conv2_b1")) #2nd conv. layer 
-        self.model.add(Activation('tanh', name="act2_b1"))
+        self.model.add(Activation(activation_func, name="act2_b1"))
 
         self.model.add(MaxPooling2D(pool_size=pool_size, name="maxpool_b1")) # decreases size, helps prevent overfitting
         self.model.add(Dropout(dropout_perc, name="dropout_b1")) # zeros out some fraction of inputs, helps prevent overfitting
@@ -194,9 +195,9 @@ class PokemonCNN(object):
         for block_num in range(num_blocks):
             filter_augmentation = 32 * (block_num + 1)
             self.model.add(SeparableConv2D(self.nb_filters+filter_augmentation, (kernel_size[0], kernel_size[1]), padding='same', name="sepconv1_b{}".format(block_num +2))) #3rd conv. layer
-            self.model.add(Activation('tanh', name="act1_b{}".format(block_num +2)))
+            self.model.add(Activation(activation_func, name="act1_b{}".format(block_num +2)))
             self.model.add(SeparableConv2D(self.nb_filters+filter_augmentation, (kernel_size[0], kernel_size[1]), padding='same', name="sepconv2_b{}".format(block_num +2))) #4th conv. layer
-            self.model.add(Activation('tanh', name="act2_b{}".format(block_num +2)))
+            self.model.add(Activation(activation_func, name="act2_b{}".format(block_num +2)))
             self.model.add(MaxPooling2D(pool_size=pool_size, name="maxpool_b{}".format(block_num + 2)))
             self.model.add(Dropout(dropout_perc, name="dropout_b{}".format(block_num + 2)))
 
@@ -208,12 +209,15 @@ class PokemonCNN(object):
 
         self.model.add(Dense(self.nb_classes, name="dense2_blockfinal")) # 149 final nodes (one for each class)
         self.model.add(Activation('softmax', name="act2_blockfinal")) # keep softmax at end to pick between classes 0-148
-        if custom_weights is not None:
-            self.model.load_weights(self.weight_path, by_name=True)
-        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', self.top_3_accuracy, 'top_k_categorical_accuracy'])
+        if self.weight_path is not None:
+            self.model.load_weights(self.weight_path, by_name=True, skip_mismatch=True)#, by_name=True)
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', self.top_3_accuracy, self.top_5_accuracy])
 
     def top_3_accuracy(self, y_true, y_pred):
         return metrics.top_k_categorical_accuracy(y_true, y_pred, k=3)
+    
+    def top_5_accuracy(self, y_true, y_pred):
+        return metrics.top_k_categorical_accuracy(y_true, y_pred, k=5)
 
     def build_xception_model(self):
         base_model = Xception(input_shape=(self.image_size[0], self.image_size[1], 3), weights='imagenet', include_top=False)
@@ -224,7 +228,7 @@ class PokemonCNN(object):
         self.model = Model(base_model.input, predictions)
         for layer in self.model.layers:
             layer.trainable = False
-        self.model.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy', self.top_3_accuracy, 'top_k_categorical_accuracy'])
+        self.model.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy', self.top_3_accuracy, self.top_5_accuracy])
 
     def len_init(self):
         self.n_train = sum(len(files) for _, _, files in os.walk(self.train_path))  # number of training samples
@@ -309,17 +313,17 @@ class CNNAnalytics(PokemonCNN):
     def save_weights(self):
         if self.s3_save:
             weight_path = self.model_name + "_weights.h5"
-            self.model.save(weight_path)
+            self.model.save_weights(weight_path)
             s3_client.upload_file(weight_path, self.BucketName, weight_path)
             print("Saved weights to s3 bucket!")
         else:
             model_path = self.model_save_path + self.model_name + "_weights.h5"
-            self.model.save(model_path)
+            self.model.save_weights(model_path)
             print("Saved model weights to \"" + model_path + "\"")
 
     def save_history(self, hist):
-        metrics = ["loss", "acc", "top_3_accuracy", "top_k_categorical_accuracy",
-                   "val_loss", "val_acc", "val_top_3_accuracy", "val_top_k_categorical_accuracy"]
+        metrics = ["loss", "acc", "top_3_accuracy", "top_5_accuracy",
+                   "val_loss", "val_acc", "val_top_3_accuracy", "val_top_5_accuracy"]
         num_metrics = len(metrics)
         numpy_loss_history = np.empty(shape=(num_metrics, self.epochs))
         for idx in range(num_metrics):
@@ -341,20 +345,20 @@ class CNNAnalytics(PokemonCNN):
         Create confusion matrix and classification report for holdout set
         """
         if self.xception:
-            Y_pred = self.model.predict_generator(self.test_gen, 
+            self.Y_pred = self.model.predict_generator(self.test_gen, 
                                     steps=self.n_test,
                                     use_multiprocessing=True, 
                                     verbose=1)
         else:
-            Y_pred = self.model.predict_generator(self.test_gen, 
+            self.Y_pred = self.model.predict_generator(self.test_gen, 
                                     steps=self.n_test/self.batch,
                                     use_multiprocessing=True, 
                                     verbose=1)
         # Take the predicted label for each observation
-        y_pred = np.argmax(Y_pred, axis=1)
+        self.y_pred = np.argmax(self.Y_pred, axis=1)
 
         # Create confusion matrix and save it
-        cm = confusion_matrix(self.test_gen.classes, y_pred)
+        cm = confusion_matrix(self.test_gen.classes, self.y_pred)
         if self.s3_save:
             cm_name = self.model_name + "_cm.txt"
             with open(cm_name, 'wb') as f:
@@ -363,10 +367,10 @@ class CNNAnalytics(PokemonCNN):
             s3_client.upload_file(cm_name, self.BucketName, cm_name)
             print("Saved CM to s3 bucket!")
 
-            class_names_pick = s3_client.get_object(Bucket=self.BucketName, Key="class_names_gen1_grouped.p")
+            class_names_pick = s3_client.get_object(Bucket=self.BucketName, Key="class_names_gen12_grouped.p")
             class_names = pickle.loads(class_names_pick['Body'].read())
 
-            class_report = classification_report(self.test_gen.classes, y_pred, target_names=class_names)
+            class_report = classification_report(self.test_gen.classes, self.y_pred, target_names=class_names)
             cr_name = self.model_name + "_cr.txt"
             with open(cr_name, 'wb') as f:
                 pickle.dump(class_report, f)
@@ -380,30 +384,50 @@ class CNNAnalytics(PokemonCNN):
                 pickle.dump(cm, f)
                 print("Saved confusion matrix to \"" + metric_path_cm + "\"")
 
-            with open('../pickles/class_names_gen1_grouped.p', 'rb') as f:
+            with open('../pickles/class_names_gen12_grouped.p', 'rb') as f:
                 class_names = np.array(pickle.load(f))
 
             metric_path_cr = self.metrics_save_path + self.model_name + "_cr.txt"
-            class_report = classification_report(self.test_gen.classes, y_pred, target_names=class_names)
+            class_report = classification_report(self.test_gen.classes, self.y_pred, target_names=class_names)
             with open(metric_path_cr, 'w') as f:
                 f.write(repr(class_report))
                 print("Saved classification report to \"" + metric_path_cr + "\"")
 
 if __name__ == "__main__":
 
-    train_path = "../data/gen1/train"
-    val_path = "../data/gen1/val"
-    test_path = "../data/gen1/test"
-    weight_path = "../models/gen1_grouped_test_weights.h5"
+    train_path = "../data/gen12/train"
+    val_path = "../data/gen12/val"
+    test_path = "../data/gen12/test"
+    weight_path = "../models/cnn_grouped_weights.h5"
 
     print("Creating Class")
-    my_cnn = CNNAnalytics(train_path, val_path, test_path, model_name="cnn_grouped_64", model_type="cnn", s3_save=False)#, custom_weights=weight_path, s3_save=True)
+    my_cnn = CNNAnalytics(
+        train_path, 
+        val_path, 
+        test_path, 
+        model_name="cnn_grouped_gen12", 
+        model_type="cnn", 
+        weight_path=weight_path)#, 
+        #s3_save=False)
+
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=50, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
+    my_cnn.param_init(
+        epochs=25, 
+        batch_size=16, 
+        image_size=(64, 64), 
+        base_filters=16, 
+        final_layer_neurons=128)
+
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
+
     print("Building Model")
-    my_cnn.build_model(kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1)
+    my_cnn.build_model(
+        kernel_size=(3, 3), 
+        pool_size=(2, 2), 
+        dropout_perc=0.25, 
+        num_blocks=1)
+
     print("Fitting Model")
     my_cnn.fit()
     print("Evaluating Model")

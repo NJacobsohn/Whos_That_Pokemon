@@ -12,13 +12,17 @@ from keras import callbacks
 import os
 import pickle
 import numpy as np
+import boto3
+
+s3 = boto3.resource('s3')
+s3_client = boto3.client('s3')
 
 class PokemonCNN(object):
     '''
     This class is meant to make testing various things on my CNN easier, should involve less swapping between terminals and development environments
     '''
 
-    def __init__(self, train_path, val_path, test_path, model_name=None, model_type="CNN", weight_path=None):
+    def __init__(self, train_path, val_path, test_path, model_name=None, model_type="CNN", weight_path=None, s3_save=False):
         '''
         Input:
             Files paths for your train/val/test files (or train/test/holdout, whatever you want to call it, I'm not your mother)
@@ -31,6 +35,11 @@ class PokemonCNN(object):
         self.val_path = val_path
         self.test_path = test_path
         self.model_type = model_type
+        if s3_save:
+            self.BucketName = "capstone2-pokemon-data"
+            self.s3_save = True
+        else:
+            self.s3_save = False
         if self.model_type.lower() != 'xception':
             self.xception = False
             self.cnn_init()
@@ -42,7 +51,6 @@ class PokemonCNN(object):
 
 
     def cnn_init(self):
-        
         self.param_init()
         self.create_generators()
         self.make_callbacks()
@@ -70,33 +78,6 @@ class PokemonCNN(object):
         else:
             print("No image generators found! (This message shouldn't be seen)")
             self.create_generators()
-
-    def save_prediction_metrics(self):
-        """
-        Create confusion matrix and classification report for holdout set
-        """
-        Y_pred = self.model.predict_generator(self.test_gen, 
-                                    steps=self.n_test/self.batch,
-                                    use_multiprocessing=True, 
-                                    verbose=1)
-        # Take the predicted label for each observation
-        y_pred = np.argmax(Y_pred, axis=1)
-
-        # Create confusion matrix and save it
-        cm = confusion_matrix(self.test_gen.classes, y_pred)
-        metric_path = self.metrics_save_path + self.model_name
-        with open(metric_path + "_cm.txt", 'wb') as f:
-            pickle.dump(cm, f)
-            print("Saved confusion matrix to \"" + metric_path + "_cm.txt\"")
-
-        # Create classification report and save it
-        with open('../pickles/class_names_gen1_grouped.p', 'rb') as f:
-            class_names = np.array(pickle.load(f))
-
-        class_report = classification_report(self.test_gen.classes, y_pred, target_names=class_names)
-        with open(metric_path + "_cr.txt", 'w') as f:
-            f.write(repr(class_report))
-            print("Saved classification report to \"" + metric_path + "_cr.txt\"")
 
     def build_model(self, kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1, custom_weights=None):
         if self.xception:
@@ -259,11 +240,35 @@ class PokemonCNN(object):
             self.neurons = final_layer_neurons
         self.epochs = epochs
 
+    def make_callbacks(self):
+        # Initialize tensorboard for monitoring
+        tensorboard = callbacks.TensorBoard(log_dir="../models/",
+                                                  histogram_freq=0, batch_size=self.batch,
+                                                  write_graph=False, embeddings_freq=0)
+
+        # Initialize model checkpoint to save best model
+        self.savename = '../models/' + self.model_name + '_best.hdf5'
+        mc = callbacks.ModelCheckpoint(self.savename,
+                                             monitor='val_loss', verbose=0, save_best_only=True,
+                                             save_weights_only=False, mode='auto', period=1)
+        self.callbacks = [mc, tensorboard]
+
+class CNNAnalytics(PokemonCNN):
+    '''
+    This class is made to inherit a PokemonCNN model and do all evalutaion and metric saving. It also makes the code a bit cleaner for the above class
+    '''
+
     def evaluate_model(self):
         '''
         Evaluates model accuracy on holdout set
         '''
-        self.metrics = self.model.evaluate_generator(self.test_gen,
+        if self.xception:
+            self.metrics = self.model.evaluate_generator(self.test_gen,
+                                           steps=self.n_test,
+                                           use_multiprocessing=True,
+                                           verbose=1)
+        else:
+            self.metrics = self.model.evaluate_generator(self.test_gen,
                                            steps=self.n_test/self.batch,
                                            use_multiprocessing=True,
                                            verbose=1)
@@ -275,28 +280,27 @@ class PokemonCNN(object):
         
     
     def save_model(self):
-        model_path = self.model_save_path + self.model_name + ".h5"
-        self.model.save(model_path)
-        print("Saved model to \"" + model_path + "\"")
+        if self.s3_save:
+            model_path = self.model_name + ".h5"
+            self.model.save(model_path)
+            s3_client.upload_file(model_path, self.BucketName, model_path)
+            print("Saved model to s3 bucket!")
+        else:
+            model_path = self.model_save_path + self.model_name + ".h5"
+            self.model.save(model_path)
+            print("Saved model to \"" + model_path + "\"")
 
     def save_weights(self):
-        model_path = self.model_save_path + self.model_name + "_weights.h5"
-        self.model.save(model_path)
-        print("Saved model weights to \"" + model_path + "\"")
+        if self.s3_save:
+            weight_path = self.model_name + "_weights.h5"
+            self.model.save(weight_path)
+            s3_client.upload_file(weight_path, self.BucketName, weight_path)
+            print("Saved weights to s3 bucket!")
+        else:
+            model_path = self.model_save_path + self.model_name + "_weights.h5"
+            self.model.save(model_path)
+            print("Saved model weights to \"" + model_path + "\"")
 
-    def make_callbacks(self):
-        # Initialize tensorboard for monitoring
-        tensorboard = callbacks.TensorBoard(log_dir="../models/",
-                                                  histogram_freq=0, batch_size=self.batch,
-                                                  write_graph=True, embeddings_freq=0)
-
-        # Initialize model checkpoint to save best model
-        self.savename = '../models/' + self.model_name + '_best.hdf5'
-        mc = callbacks.ModelCheckpoint(self.savename,
-                                             monitor='val_loss', verbose=0, save_best_only=True,
-                                             save_weights_only=False, mode='auto', period=1)
-        self.callbacks = [mc, tensorboard]
-    
     def save_history(self, hist):
         metrics = ["loss", "acc", "top_3_accuracy", "top_k_categorical_accuracy",
                    "val_loss", "val_acc", "val_top_3_accuracy", "val_top_k_categorical_accuracy"]
@@ -304,8 +308,64 @@ class PokemonCNN(object):
         numpy_loss_history = np.empty(shape=(num_metrics, self.epochs))
         for idx in range(num_metrics):
             numpy_loss_history[idx] = hist.history[metrics[idx]]
-        np.savetxt("../models/{}_history.txt".format(self.model_name), numpy_loss_history.T, delimiter=",")
+
+        if self.s3_save:
+            hist_path = "{}_history.txt".format(self.model_name)
+            np.savetxt(hist_path, numpy_loss_history.T, delimiter=",")
+            s3_client.upload_file(hist_path, self.BucketName, hist_path)
+            print("Saved history to s3 bucket!")
+
+        else:
+            hist_path = "../models/{}_history.txt".format(self.model_name)
+            np.savetxt(hist_path, numpy_loss_history.T, delimiter=",")
+            print("Saved model history to \"" + hist_path + "\"")
         
+    def save_prediction_metrics(self):
+        """
+        Create confusion matrix and classification report for holdout set
+        """
+        Y_pred = self.model.predict_generator(self.test_gen, 
+                                    steps=self.n_test/self.batch,
+                                    use_multiprocessing=True, 
+                                    verbose=1)
+        # Take the predicted label for each observation
+        y_pred = np.argmax(Y_pred, axis=1)
+
+        # Create confusion matrix and save it
+        cm = confusion_matrix(self.test_gen.classes, y_pred)
+        if self.s3_save:
+            cm_name = self.model_name + "_cm.txt"
+            with open(cm_name, 'wb') as f:
+                pickle.dump(cm, f)
+                print("Saved confusion matrix to \"" + cm_name + "\"")
+            s3_client.upload_file(cm_name, self.BucketName, cm_name)
+            print("Saved CM to s3 bucket!")
+
+            class_names_pick = s3_client.get_object(Bucket=self.BucketName, Key="class_names_gen1_grouped.p")
+            class_names = pickle.loads(class_names_pick['Body'].read())
+
+            class_report = classification_report(self.test_gen.classes, y_pred, target_names=class_names)
+            cr_name = self.model_name + "_cr.txt"
+            with open(cr_name, 'wb') as f:
+                pickle.dump(class_report, f)
+                print("Saved confusion matrix to \"" + cr_name + "\"")
+            s3_client.upload_file(cr_name, self.BucketName, cr_name)
+            print("Saved CM to s3 bucket!")
+
+        else:
+            metric_path_cm = self.metrics_save_path + self.model_name + "_cm.txt"
+            with open(metric_path_cm, 'wb') as f:
+                pickle.dump(cm, f)
+                print("Saved confusion matrix to \"" + metric_path_cm + "\"")
+
+            with open('../pickles/class_names_gen1_grouped.p', 'rb') as f:
+                class_names = np.array(pickle.load(f))
+
+            metric_path_cr = self.metrics_save_path + self.model_name + "_cr.txt"
+            class_report = classification_report(self.test_gen.classes, y_pred, target_names=class_names)
+            with open(metric_path_cr, 'w') as f:
+                f.write(repr(class_report))
+                print("Saved classification report to \"" + metric_path_cr + "\"")
 
 if __name__ == "__main__":
 
@@ -315,9 +375,9 @@ if __name__ == "__main__":
     weight_path = "../models/gen1_grouped_test_weights.h5"
 
     print("Creating Class")
-    my_cnn = PokemonCNN(train_path, val_path, test_path, model_name="xception", model_type="xception")#, custom_weights=weight_path)
+    my_cnn = CNNAnalytics(train_path, val_path, test_path, model_name="xception_eval_test", model_type="xception", s3_save=False)#, custom_weights=weight_path, s3_save=True)
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=100, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
+    my_cnn.param_init(epochs=1, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")
@@ -332,4 +392,6 @@ if __name__ == "__main__":
     my_cnn.save_history(hist=my_cnn.hist)
     print("Saving Weights")
     my_cnn.save_weights()
+    print("Saving Model")
+    my_cnn.save_model()
     print("Everything ran without errors!")

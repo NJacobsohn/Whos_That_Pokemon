@@ -38,7 +38,3 @@ def choose_generation(generation=0):
     for pokemon in names:
         pokemon_evo_dictionary[pokemon] = []
     return pokemon_evo_dictionary
-"""
-
-
-"""

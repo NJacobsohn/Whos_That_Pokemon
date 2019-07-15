@@ -394,11 +394,19 @@ class CNNAnalytics(PokemonCNN):
                 print("Saved classification report to \"" + metric_path_cr + "\"")
 
 if __name__ == "__main__":
-
+    #FOR LOCAL RUNNING
+    """
     train_path = "../data/gen12/train"
     val_path = "../data/gen12/val"
     test_path = "../data/gen12/test"
     weight_path = "../models/cnn_grouped_weights.h5"
+    """
+
+    #FOR EC2 AWS RUNNING
+    train_path = "gen12/train"
+    val_path = "gen12/val"
+    test_path = "gen12/test"
+    weight_path = "cnn_grouped_weights.h5"
 
     print("Creating Class")
     my_cnn = CNNAnalytics(
@@ -407,8 +415,8 @@ if __name__ == "__main__":
         test_path, 
         model_name="cnn_grouped_gen12", 
         model_type="cnn", 
-        weight_path=weight_path)#, 
-        #s3_save=False)
+        weight_path=weight_path, 
+        s3_save=False)
 
     print("Initializing Parameters")
     my_cnn.param_init(

@@ -64,7 +64,17 @@ class PokemonCNN(object):
         '''
         Fits built model to given params
         '''
-        if self.train_gen and self.val_gen:
+        print(self.model.summary())
+        if self.xception:
+            self.hist = self.model.fit_generator(
+                        self.train_gen,
+                        steps_per_epoch=self.n_train,
+                        epochs=self.epochs,
+                        validation_data=self.val_gen,
+                        validation_steps=self.n_val,
+                        use_multiprocessing=True,
+                        callbacks=self.callbacks)
+        else:
             self.hist = self.model.fit_generator(
                 self.train_gen,
                 steps_per_epoch=self.n_train/self.batch,
@@ -73,11 +83,7 @@ class PokemonCNN(object):
                 validation_data=self.val_gen,
                 validation_steps=self.n_val/self.batch,
                 use_multiprocessing=True,
-                callbacks = self.callbacks
-            )
-        else:
-            print("No image generators found! (This message shouldn't be seen)")
-            self.create_generators()
+                callbacks = self.callbacks)
 
     def build_model(self, kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1, custom_weights=None):
         if self.xception:
@@ -90,39 +96,6 @@ class PokemonCNN(object):
         Input:
             augmentation_strength: float between 0 and 1 (higher numbers = more augmentation, use higher than default if your model tends to overfit)  
         '''
-        if not self.xception:
-            train_datagen = ImageDataGenerator(
-                rotation_range=15/augmentation_strength,
-                width_shift_range=augmentation_strength/4,
-                height_shift_range=augmentation_strength/4,
-                brightness_range=[0.2, 0.8],
-                shear_range=augmentation_strength/4,
-                zoom_range=augmentation_strength/4,
-                horizontal_flip=True)
-
-            test_datagen = ImageDataGenerator()
-
-            self.train_gen = train_datagen.flow_from_directory(
-                self.train_path,
-                target_size=self.image_size,
-                batch_size=self.batch,
-                class_mode='categorical',
-                shuffle=True)
-        
-            self.val_gen = test_datagen.flow_from_directory(
-                self.val_path,
-                target_size=self.image_size,
-                batch_size=self.batch,
-                class_mode='categorical',
-                shuffle=False)
-
-            self.test_gen = test_datagen.flow_from_directory(
-                self.test_path,
-                target_size=self.image_size,
-                batch_size=self.batch,
-                class_mode='categorical',
-                shuffle=False)
-
         if self.xception:
             train_datagen = ImageDataGenerator(rescale=1. / 255,
                                        rotation_range=augmentation_strength,
@@ -156,6 +129,38 @@ class PokemonCNN(object):
                 class_mode='categorical',
                 shuffle=False)
 
+        else:
+            train_datagen = ImageDataGenerator(
+                rotation_range=15/augmentation_strength,
+                width_shift_range=augmentation_strength/4,
+                height_shift_range=augmentation_strength/4,
+                brightness_range=[0.2, 0.8],
+                shear_range=augmentation_strength/4,
+                zoom_range=augmentation_strength/4,
+                horizontal_flip=True)
+
+            test_datagen = ImageDataGenerator()
+
+            self.train_gen = train_datagen.flow_from_directory(
+                self.train_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=True)
+        
+            self.val_gen = test_datagen.flow_from_directory(
+                self.val_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=False)
+
+            self.test_gen = test_datagen.flow_from_directory(
+                self.test_path,
+                target_size=self.image_size,
+                batch_size=self.batch,
+                class_mode='categorical',
+                shuffle=False)
 
     def build_cnn_model(self, kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1, custom_weights=None):
         '''
@@ -242,16 +247,27 @@ class PokemonCNN(object):
 
     def make_callbacks(self):
         # Initialize tensorboard for monitoring
-        tensorboard = callbacks.TensorBoard(log_dir="../models/",
-                                                  histogram_freq=0, batch_size=self.batch,
-                                                  write_graph=False, embeddings_freq=0)
+        tensorboard = callbacks.TensorBoard(
+            log_dir="../models/logs/{}".format(self.model_name),
+            histogram_freq=0, 
+            batch_size=self.batch,
+            write_graph=True,
+            write_grads=True, 
+            update_freq='epoch')
 
         # Initialize model checkpoint to save best model
-        self.savename = '../models/' + self.model_name + '_best.hdf5'
-        mc = callbacks.ModelCheckpoint(self.savename,
-                                             monitor='val_loss', verbose=0, save_best_only=True,
-                                             save_weights_only=False, mode='auto', period=1)
-        self.callbacks = [mc, tensorboard]
+        """
+        self.savename = '../logs/{0}/{1}_best.hdf5'.format(self.model_name, self.model_name)
+        mc = callbacks.ModelCheckpoint(
+            self.savename,
+            monitor='val_loss', 
+            verbose=0, 
+            save_best_only=True,
+            save_weights_only=False, 
+            mode='auto', 
+            period=1)
+        """
+        self.callbacks = [tensorboard]#, mc]
 
 class CNNAnalytics(PokemonCNN):
     '''
@@ -324,7 +340,13 @@ class CNNAnalytics(PokemonCNN):
         """
         Create confusion matrix and classification report for holdout set
         """
-        Y_pred = self.model.predict_generator(self.test_gen, 
+        if self.xception:
+            Y_pred = self.model.predict_generator(self.test_gen, 
+                                    steps=self.n_test,
+                                    use_multiprocessing=True, 
+                                    verbose=1)
+        else:
+            Y_pred = self.model.predict_generator(self.test_gen, 
                                     steps=self.n_test/self.batch,
                                     use_multiprocessing=True, 
                                     verbose=1)
@@ -375,9 +397,9 @@ if __name__ == "__main__":
     weight_path = "../models/gen1_grouped_test_weights.h5"
 
     print("Creating Class")
-    my_cnn = CNNAnalytics(train_path, val_path, test_path, model_name="xception_eval_test", model_type="xception", s3_save=False)#, custom_weights=weight_path, s3_save=True)
+    my_cnn = CNNAnalytics(train_path, val_path, test_path, model_name="cnn_grouped_64", model_type="cnn", s3_save=False)#, custom_weights=weight_path, s3_save=True)
     print("Initializing Parameters")
-    my_cnn.param_init(epochs=1, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
+    my_cnn.param_init(epochs=50, batch_size=16, image_size=(64, 64), base_filters=16, final_layer_neurons=128)
     print("Creating Generators")
     my_cnn.create_generators(augmentation_strength=0.4)
     print("Building Model")

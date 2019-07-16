@@ -226,8 +226,10 @@ class PokemonCNN(object):
         x = GlobalAveragePooling2D()(x)
         predictions = Dense(self.nb_classes, activation='softmax')(x)
         self.model = Model(base_model.input, predictions)
-        for layer in self.model.layers:
+        for layer in self.model.layers[:-2]:
             layer.trainable = False
+        for layer in self.model.layers[-2:]:
+            layer.trainable = True
         self.model.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy', self.top_3_accuracy, self.top_5_accuracy])
 
     def len_init(self):
@@ -251,8 +253,13 @@ class PokemonCNN(object):
 
     def make_callbacks(self):
         # Initialize tensorboard for monitoring
+        if self.xception:
+            logdir = "logs/{}".format(self.model_name)
+        else:
+            logdir = "../models/logs/{}".format(self.model_name)
+
         tensorboard = callbacks.TensorBoard(
-            log_dir="../models/logs/{}".format(self.model_name),
+            log_dir=logdir,
             histogram_freq=0, 
             batch_size=self.batch,
             write_graph=True,
@@ -260,18 +267,21 @@ class PokemonCNN(object):
             update_freq='epoch')
 
         # Initialize model checkpoint to save best model
-        """
-        self.savename = '../logs/{0}/{1}_best.hdf5'.format(self.model_name, self.model_name)
+        if self.xception:
+            self.savename = "{0}_best.h5".format(self.model_name)
+        else:
+            self.savename = '../models/metrics/{0}_best.h5'.format(self.model_name)
+
         mc = callbacks.ModelCheckpoint(
             self.savename,
-            monitor='val_loss', 
+            monitor='val_acc', 
             verbose=0, 
             save_best_only=True,
-            save_weights_only=False, 
+            save_weights_only=True, 
             mode='auto', 
             period=1)
-        """
-        self.callbacks = [tensorboard]#, mc]
+        
+        self.callbacks = [tensorboard, mc]
 
 class CNNAnalytics(PokemonCNN):
     '''
@@ -354,10 +364,10 @@ class CNNAnalytics(PokemonCNN):
                                     steps=self.n_test/self.batch,
                                     use_multiprocessing=True, 
                                     verbose=1)
-        # Take the predicted label for each observation
+
         self.y_pred = np.argmax(self.Y_pred, axis=1)
 
-        # Create confusion matrix and save it
+        
         cm = confusion_matrix(self.test_gen.classes, self.y_pred)
         if self.s3_save:
             cm_name = self.model_name + "_cm.txt"
@@ -403,20 +413,23 @@ if __name__ == "__main__":
     """
 
     #FOR EC2 AWS RUNNING
-    train_path = "gen12/train"
-    val_path = "gen12/val"
-    test_path = "gen12/test"
+    
+    train_path = "data/train"
+    val_path = "data/val"
+    test_path = "data/test"
     weight_path = "cnn_grouped_weights.h5"
+    
+
 
     print("Creating Class")
     my_cnn = CNNAnalytics(
         train_path, 
         val_path, 
         test_path, 
-        model_name="cnn_grouped_gen12", 
-        model_type="cnn", 
+        model_name="aws_xception_test", 
+        model_type="xception", 
         weight_path=weight_path, 
-        s3_save=False)
+        s3_save=True)
 
     print("Initializing Parameters")
     my_cnn.param_init(

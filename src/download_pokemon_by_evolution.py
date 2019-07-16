@@ -22,7 +22,7 @@ def download_keyword(keyword=None, number_of_images=115, output_directory="../da
             "chromedriver" : "./chromedriver",
             "prefix" : "dl_",
             "no_numbering" : True}   
-    paths = gid.download(arguments)
+    gid.download(arguments)
 
 def choose_generation(generation=0):
     pokemon_evo_dictionary = defaultdict(list)

@@ -6,6 +6,29 @@ import os
 from collections import defaultdict
 from PIL import Image, ImageTk
 
+#______________________________________To-Do______________________________________#
+"""
+Add labels for answer vs. guessed images
+Have score constantly showing after user is chosen
+Show question progress
+Use math to put images in their proper spots each time (regardless of window size)
+Show larger image during guessing phase
+Make everything much prettier:
+    - Background for application
+    - Custom borders?
+    - Window customization
+    - General overlay items?
+Add option for # of questions
+Add check to make sure you don't get duplicate questions (maybe just recursive function? eg. while pokemon in prev_list)
+Show leaderboard on start and finish of quiz
+Add option to view advanced stats about your user (# of games, mean score, # of perfect games, etc.)
+Update game score saving metrics to include the the questions and guesses for each user rather than flat score
+
+Competitive mode for neural network guesses
+Difficulty options against neural net (beating top 1, 3, or 5 accuracy)
+"""
+#_________________________________________________________________________________#
+
 
 class QuizGame(tk.Tk):
     """
@@ -16,9 +39,9 @@ class QuizGame(tk.Tk):
         tk.Tk.__init__(self)
         self.canvas = tk.Canvas(self, width=1000, height=500)
         self.canvas.pack(side="top", fill="both", expand=True)
-        #self.canvas["title"] = "Who's That Pokemon?"
         self.img_size = 128, 128
         self.create_widgets()
+
         #load user scores
         with open("../pickles/user_score_dictionary.p", "rb") as f:
             self.user_dict = pickle.load(f)
@@ -29,9 +52,7 @@ class QuizGame(tk.Tk):
         with open("../pickles/dex_to_pokemon.p", "rb") as f:
             self.dex_to_poke = pickle.load(f)
         
-        
         self.score = 0
-        #self.username = None
         self.previous_pokemon = []
         self.previous_guesses = []
         self.is_userCreated = False
@@ -63,10 +84,6 @@ class QuizGame(tk.Tk):
         self.guess_box.bind("<Key-Return>", self.show_guess_with_answer, "+")
         self.guess_box.bind("<Key-Return>", self.create_next_button, "+")
 
-    #make dict with pokemon and pokedex numbers gen1 (maybe also inverse of this too)
-    #show image of guess if guess is incorrect
-    #show current score
-    #randomly pick new pokemon
 
     def create_next_button(self, event):
         #method to make button that resets the current guess and chosen pokemon

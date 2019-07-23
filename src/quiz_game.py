@@ -37,7 +37,7 @@ class QuizGame(tk.Tk):
     """
     def __init__(self, master=None):
         tk.Tk.__init__(self)
-        self.canvas = tk.Canvas(self, width=1000, height=500)
+        self.canvas = tk.Canvas(self, width=1280, height=768)
         self.canvas.pack(side="top", fill="both", expand=True)
         self.img_size = 128, 128
         self.create_widgets()
@@ -57,7 +57,6 @@ class QuizGame(tk.Tk):
         self.previous_guesses = []
         self.is_userCreated = False
         self.question_number = 0
-        self.img_file_path = "../data/quiz_photos/Abra.jpeg"
 
 
     def create_widgets(self):
@@ -84,7 +83,6 @@ class QuizGame(tk.Tk):
         self.guess_box.bind("<Key-Return>", self.show_guess_with_answer, "+")
         self.guess_box.bind("<Key-Return>", self.create_next_button, "+")
 
-
     def create_next_button(self, event):
         #method to make button that resets the current guess and chosen pokemon
         #then picks new pokemon and asks user for guess again
@@ -107,14 +105,26 @@ class QuizGame(tk.Tk):
             self.display_final_score_screen()
 
     def display_final_score_screen(self):
-        pass
+        self.canvas.delete("answer")
+        self.canvas.delete("guess")
+        self.next_question.pack_forget()
+        self.guess_box.pack_forget()
+        """
+        for idx, item in enumerate(self.previous_pokemon):
+            self.img_file_path = "../data/quiz_photos/{}.jpeg".format(item)
+            self.im_f = Image.open(self.img_file_path)
+            self.im_f.thumbnail(self.img_size)
+            self.tk_im_f = ImageTk.PhotoImage(self.im_f)
+            tag_name = "question{}".format(idx)
+            self.canvas.create_image(128*idx, 10, anchor="nw", image=self.tk_im_f, tag=tag_name)
+        """
+
 
     def show_guess_with_answer(self, event):
         self.get_fetch_guess()
         self.canvas.delete("question")
         self.canvas.create_image(100, 0, anchor="nw", image=self.tk_im, tag="answer")
         self.canvas.create_image(500, 0, anchor="nw", image=self.guess_tk_im, tag="guess")
-
 
     def pick_pokemon_with_image(self, event):
         self.choose_random_pokemon()
@@ -126,6 +136,7 @@ class QuizGame(tk.Tk):
     def get_pokemon_from_number(self):
         self.pokemon = self.dex_to_poke[self.pokemon_choice]
         self.img_file_path = "../data/quiz_photos/{}.jpeg".format(self.pokemon)
+        self.previous_pokemon.append(self.pokemon)
         self.fetch_image("")
 
     def get_fetch_guess(self):
@@ -161,7 +172,6 @@ class QuizGame(tk.Tk):
 
     def display_image(self, event):
         self.canvas.create_image(350, 0, anchor="nw", image=self.tk_im, tag="question")
-        self.previous_pokemon.append(self.im)
 
     def save_answer(self, event):
         self.previous_guesses.append(self.guess)
@@ -199,5 +209,4 @@ class QuizGame(tk.Tk):
 
 
 app = QuizGame()
-
 app.mainloop()

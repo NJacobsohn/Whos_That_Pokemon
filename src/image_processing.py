@@ -3,6 +3,7 @@ import glob
 import cairosvg
 import os
 import pickle
+from collections import defaultdict
 '''This needs to be run from the src/ directory to work, if running from other directories, change data_path and pokemon_name accordingly'''
 image_dict = {}
 data_path = '../data/dataset'
@@ -104,3 +105,8 @@ def pickle_var(to_be_pickled=None, file_name="pickle"):
         pickle.dump(to_be_pickled, open(pickle_dir_name + file_name + ".p", "wb"))
     else:
         return "Add file to be pickled"
+
+def load_and_clear_userdata():
+    user_dict = defaultdict(list)
+    user_dict = {"user1" : [1, 2, 3]}
+    pickle.dump(user_dict, open("../pickles/user_score_dictionary.p", "wb"))

@@ -101,8 +101,9 @@ class QuizGame(tk.Tk):
             self.pick_pokemon_with_image("")
             self.display_image("")
         else:
+            pass
             #prepare for closing quiz out
-            self.display_final_score_screen()
+            #self.display_final_score_screen()
 
     def display_final_score_screen(self):
         self.canvas.delete("answer")

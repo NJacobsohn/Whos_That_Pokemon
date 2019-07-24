@@ -1,4 +1,4 @@
-import tkinter as tk
+from mttkinter import mtTkinter as tk
 import PIL
 import numpy as np
 import pickle
@@ -28,7 +28,6 @@ Competitive mode for neural network guesses
 Difficulty options against neural net (beating top 1, 3, or 5 accuracy)
 """
 #_________________________________________________________________________________#
-
 
 class QuizGame(tk.Tk):
     """
@@ -207,6 +206,23 @@ class QuizGame(tk.Tk):
         Saves user dictionary with scores
         """
         pickle.dump(self.user_dict, open("../pickles/user_score_dictionary.p", "wb"))
+"""
+from tkthread import tk, TkThread
+
+root = QuizGame()        # create the root window
+tkt = TkThread(root)  # make the thread-safe callable
+
+import threading, time
+def run(func):
+    threading.Thread(target=func).start()
+
+run(lambda:     root.wm_title('FAILURE'))
+run(lambda: tkt(root.wm_title,'SUCCESS'))
+
+root.update()
+time.sleep(5)  # _tkinter.c:WaitForMainloop fails
+root.mainloop()
+"""
 
 
 app = QuizGame()

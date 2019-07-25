@@ -4,8 +4,8 @@ data/
 #ignore models
 models/
 
-#ignore gitignore
-.gitignore
+#ignore uploads
+web_app/uploads
 
 #ignore ipynb checkpoints
 notebooks/.ipynb_checkpoints

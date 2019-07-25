@@ -1,6 +1,3 @@
-# Demonstrates Bootstrap version 3.3 Starter Template
-# available here: https://getbootstrap.com/docs/3.3/getting-started/#examples
-
 from flask import Flask, render_template, flash, request, redirect, url_for
 import os
 from werkzeug.utils import secure_filename
@@ -34,7 +31,6 @@ def rotate_save(f, file_path):
         image.close()
 
     except (AttributeError, KeyError, IndexError):
-        # cases: image don't have getexif
         image.save(file_path)
         image.close()
 
@@ -46,17 +42,17 @@ def process_img(filename):
     return image_batch
 
 def model_predict(img_path, model):
-    im =  process_img(img_path)
-    preds =  model.predict(im)
-    top_3 = preds.argsort()[0][::-1][:3] # sort in reverse order and return top 3 indices
+    im = process_img(img_path)
+    preds = model.predict(im)
+    top_3 = preds.argsort()[0][::-1][:3]
     top_3_names = class_names[top_3]
     top_3_percent = preds[0][[top_3]]*100
-    top_3_text = '<br>'.join([f'{name}: {percent:.2f}%' for name, percent in zip(top_3_names,top_3_percent)])
+    top_3_text = '<br>'.join([f'{name}: {percent:.2f}%' for name, percent in zip(top_3_names, top_3_percent)])
     return top_3_text
 
 
 # home page
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
@@ -75,28 +71,29 @@ def contact():
 def upload():
     if request.method == 'POST':
         
-        f = request.files['file']
-
-
+        f = request.files['predict_img']
         
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(
             basepath, 'uploads', secure_filename(f.filename))
-        # f.save(file_path)
         rotate_save(f, file_path)
-
-        # Make prediction
         preds = model_predict(file_path, model)
 
-        # Delete it so we don't clutter our server up
         os.remove(file_path)
-
         return preds
     return None
 
 if __name__ == '__main__':
 
-    model = load_model("../models/model_acc2713.h5")
+    model_path = "../models/model_acc2713.h5"
+
+    model = load_model(model_path)
+    model._make_predict_function()
+
     with open('../pickles/class_names.p', 'rb') as f:
                 class_names = np.array(pickle.load(f))
+    
+    with open('../pickles/class_names_gen1_grouped.p', 'rb') as f:
+                class_names = np.array(pickle.load(f))
+
     app.run(host='0.0.0.0', port=8080, threaded=True, debug=False)

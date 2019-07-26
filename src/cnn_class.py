@@ -26,6 +26,10 @@ class PokemonCNN(object):
         '''
         Input:
             Files paths for your train/val/test files (or train/test/holdout, whatever you want to call it, I'm not your mother)
+            model_name = str, this should generally be defined whenver you instantiate this object because it's good practice and keeps things organized
+            model_type = will always do regular CNN unless "xception" (any case) is defined
+            weight_path = when model_type is CNN this will load custom weights onto the architecture before compiling the model
+            s3_save = boolean on whether or not to save the analytics locally or on the s3 bucket (often only used when training on EC2 instances)
         '''
         self.weight_path = weight_path
         self.model_name = model_name
@@ -86,6 +90,9 @@ class PokemonCNN(object):
                 callbacks = self.callbacks)
 
     def build_model(self, kernel_size=(3, 3), pool_size=(2, 2), dropout_perc=0.25, num_blocks=1, custom_weights=None):
+        """
+        Calls the correct build function depending on which type of model you chose
+        """
         if self.xception:
             self.build_xception_model()
         else:
@@ -210,7 +217,7 @@ class PokemonCNN(object):
         self.model.add(Dense(self.nb_classes, name="dense2_blockfinal")) # 149 final nodes (one for each class)
         self.model.add(Activation('softmax', name="act2_blockfinal")) # keep softmax at end to pick between classes 0-148
         if self.weight_path is not None:
-            self.model.load_weights(self.weight_path, by_name=True, skip_mismatch=True)#, by_name=True)
+            self.model.load_weights(self.weight_path, by_name=True, skip_mismatch=True)
         self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', self.top_3_accuracy, self.top_5_accuracy])
 
     def top_3_accuracy(self, y_true, y_pred):
@@ -426,14 +433,14 @@ if __name__ == "__main__":
         train_path, 
         val_path, 
         test_path, 
-        model_name="gen1_regular", 
+        model_name="gen1_regular_100epochs", 
         model_type="cnn")#, 
         #weight_path=weight_path, 
         #s3_save=True)
 
     print("Initializing Parameters")
     my_cnn.param_init(
-        epochs=10, 
+        epochs=100, 
         batch_size=16, 
         image_size=(64, 64), 
         base_filters=16, 

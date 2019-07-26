@@ -7,8 +7,7 @@ from keras.preprocessing.image import img_to_array, load_img
 from keras.models import load_model
 import pickle
 
-UPLOAD_FOLDER = '/path/to/the/uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+UPLOAD_FOLDER = '/uploads'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -52,7 +51,7 @@ def model_predict(img_path, model):
 
 
 # home page
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
 
@@ -69,19 +68,20 @@ def contact():
 # prediction page
 @app.route('/predict/', methods=['GET', 'POST'])
 def upload():
-    if request.method == 'POST':
+    if request.method == 'GET':
         
-        f = request.files['predict_img']
+        f = request.files['file']
         
         basepath = os.path.dirname(__file__)
-        file_path = os.path.join(
-            basepath, 'uploads', secure_filename(f.filename))
+        file_path = os.path.join(basepath, 'uploads', secure_filename(f.filename))
         rotate_save(f, file_path)
         preds = model_predict(file_path, model)
 
         os.remove(file_path)
-        return preds
+        return render_template('predict.html', data=preds)
     return None
+
+
 
 if __name__ == '__main__':
 

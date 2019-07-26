@@ -54,22 +54,15 @@
       </div>
     </nav>
 
-    
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Upload</span>
-      </div>
-      <div class="custom-file">
-        <input type="file" name="predict_img" class="custom-file-input" id="predict_img" accept=".jpg, .jpeg, .png">
-        <label class="custom-file-label" for="inputGroupFile01">Choose That Pokemon!</label>
-      </div>
-    </div>
-    
+    <div class="container">
 
-    <div>
-      <a type="button" href="/predict" class="btn btn-primary btn-lrg" id="predict_btn">Who's That Pokemon?</a>
-    </div>
-    
+      <div class="starter-template">
+        <h1>Prediction:</h1>
+        <p class="lead">{{data}}</p>
+      </div>
+
+    </div><!-- /.container -->
+
 
     <!-- Bootstrap core JavaScript
     ================================================== -->

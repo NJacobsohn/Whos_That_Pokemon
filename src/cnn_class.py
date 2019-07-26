@@ -177,7 +177,7 @@ class PokemonCNN(object):
                     MaxPooling2D layer (default to (2, 2) pool size)
                     Dropout layer (default 0.25)
         '''
-        activation_func = 'tanh' #LeakyReLU() #usually 'tanh'
+        activation_func = 'tanh' #usually 'tanh'
         self.model = Sequential() # model is a linear stack of layers (don't change)
 
         self.model.add(Conv2D(self.nb_filters, (kernel_size[0], kernel_size[1]),
@@ -394,7 +394,7 @@ class CNNAnalytics(PokemonCNN):
                 pickle.dump(cm, f)
                 print("Saved confusion matrix to \"" + metric_path_cm + "\"")
 
-            with open('../pickles/class_names_gen12_grouped.p', 'rb') as f:
+            with open('../pickles/class_names.p', 'rb') as f:
                 class_names = np.array(pickle.load(f))
 
             metric_path_cr = self.metrics_save_path + self.model_name + "_cr.txt"
@@ -405,20 +405,20 @@ class CNNAnalytics(PokemonCNN):
 
 if __name__ == "__main__":
     #FOR LOCAL RUNNING
-    """
-    train_path = "../data/gen12/train"
-    val_path = "../data/gen12/val"
-    test_path = "../data/gen12/test"
+    
+    train_path = "../data/train"
+    val_path = "../data/val"
+    test_path = "../data/test"
     weight_path = "../models/cnn_grouped_weights.h5"
-    """
+    
 
     #FOR EC2 AWS RUNNING
-    
+    """
     train_path = "data/train"
     val_path = "data/val"
     test_path = "data/test"
     weight_path = "cnn_grouped_weights.h5"
-    
+    """
 
 
     print("Creating Class")
@@ -426,14 +426,14 @@ if __name__ == "__main__":
         train_path, 
         val_path, 
         test_path, 
-        model_name="aws_xception_test", 
-        model_type="xception", 
-        weight_path=weight_path, 
-        s3_save=True)
+        model_name="gen1_regular", 
+        model_type="cnn")#, 
+        #weight_path=weight_path, 
+        #s3_save=True)
 
     print("Initializing Parameters")
     my_cnn.param_init(
-        epochs=25, 
+        epochs=10, 
         batch_size=16, 
         image_size=(64, 64), 
         base_filters=16, 

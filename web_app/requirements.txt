@@ -1,1 +1,6 @@
 Flask
+keras
+numpy
+pillow
+werkzeug
+tensorflow

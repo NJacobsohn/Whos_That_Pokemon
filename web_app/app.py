@@ -5,6 +5,7 @@ from PIL import Image, ExifTags
 import numpy as np
 from keras.preprocessing.image import img_to_array, load_img
 from keras.models import load_model
+from keras.metrics import top_k_categorical_accuracy
 import pickle
 
 UPLOAD_FOLDER = '/uploads'
@@ -68,18 +69,12 @@ def contact():
 @app.route('/predict', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        print("I started")
         f = request.files["file"]
-        print(f)
-        print("Grabbed the file: {}".format(f))
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(basepath, 'uploads', secure_filename(f.filename))
         f.save(file_path)
-        print("Rotating")
         rotate_save(f, file_path)
-        print("predicting")
         preds = model_predict(file_path, model)
-        print("predictions: {}".format(preds))
         os.remove(file_path)
         return preds
     return None
@@ -88,15 +83,15 @@ def upload():
 
 if __name__ == '__main__':
 
-    model_path = "../models/model_acc2713.h5"
+    model_path = "models/model_acc2713.h5"
 
     model = load_model(model_path)
     model._make_predict_function()
 
-    with open('../pickles/class_names.p', 'rb') as f:
+    with open('pickles/class_names.p', 'rb') as f:
                 class_names = np.array(pickle.load(f))
     
-    with open('../pickles/class_names_gen1_grouped.p', 'rb') as f:
+    with open('pickles/class_names_gen1_grouped.p', 'rb') as f:
                 class_names_grouped = np.array(pickle.load(f))
 
     app.run(host='0.0.0.0', port=8080, threaded=True, debug=False)

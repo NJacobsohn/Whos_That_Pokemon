@@ -55,20 +55,13 @@
 
     
     <div class="jumbotron">
-      <h1 class="display-3">So you found a Pokemon you don't know the name of</h1>
-      <p class="lead">This website exists to remedy that problem (with a 30% accuracy!)</p>
+      <h1 class="display-3">What Pokemon is This?</h1>
+      <p class="lead">This website exists to answer this question (with a 30% accuracy!)</p>
       <hr class="my-4">
       <p>Upload or take a photo of a Pokemon by clicking the button below</p>
       <form id="upload-file" method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}" name="img-form">
         <label for="imageUpload" class="upload-label">Choose That Pokemon!</label>
         <input type="file" name="file" id="imageUpload">
-        <!--
-        <div class="form-group">
-          <label for="imageUpload" class="upload-label">Choose That Pokemon!</label>
-          <input type="file" name="file" id="imageUpload" aria-describedby="fileHelp">
-          <small id="fileHelp" class="form-text text-muted">Choose or take a photo of a Pokemon and my network will attempt to classify it for you!</small>
-        </div>
-        -->
       </form>
       <div class="image-section" style="display:none;">
         <div class="img-preview">

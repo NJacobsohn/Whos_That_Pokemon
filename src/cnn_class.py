@@ -19,7 +19,7 @@ s3_client = boto3.client('s3')
 
 class PokemonCNN(object):
     '''
-    This class is meant to make testing things with CNNs easier, should involve less swapping between terminals and development environments
+    This class should make testing CNNs easier, should involve less swapping between terminals and development environments
     '''
 
     def __init__(self, train_path, val_path, test_path, model_name=None, model_type="CNN", weight_path=None, s3_save=False):

@@ -19,7 +19,7 @@ s3_client = boto3.client('s3')
 
 class PokemonCNN(object):
     '''
-    This class is meant to make testing various things on my CNN easier, should involve less swapping between terminals and development environments
+    This class is meant to make testing things with CNNs easier, should involve less swapping between terminals and development environments
     '''
 
     def __init__(self, train_path, val_path, test_path, model_name=None, model_type="CNN", weight_path=None, s3_save=False):
@@ -178,9 +178,11 @@ class PokemonCNN(object):
             dropout_perc (float between 0 and 1): percent for dropout layers (try to keep between 0.25 and 0.5)
             num_blocks (int): number of layer blocks added to network
                 A layer block is:
-                    SeparableConv2D layer with additional filters (self.nb_filters + (32 * block (i.e. first block has 32 extra, second block has 64 extra, etc.)))
+                    SeparableConv2D layer with additional filters (self.nb_filters + (32 * block))
+                                                                  (i.e. first block has 32 extra, second block has 64 extra, etc.)
                     tanh Activation layer
-                    SeparableConv2D layer with additional filters (self.nb_filters + (32 * block (i.e. first block has 32 extra, second block has 64 extra, etc.)))
+                    SeparableConv2D layer with additional filters (self.nb_filters + (32 * block))
+                                                                  (i.e. first block has 32 extra, second block has 64 extra, etc.)
                     tanh Activation layer
                     MaxPooling2D layer (default to (2, 2) pool size)
                     Dropout layer (default 0.25)

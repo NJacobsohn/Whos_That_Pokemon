@@ -46,20 +46,14 @@ class PokemonCNN(object):
             self.s3_save = False
         if self.model_type.lower() != 'xception':
             self.xception = False
-            self.cnn_init()
+            self.model_init()
         elif self.model_type.lower() == 'xception':
             self.xception = True
-            self.xception_init()
-            self.model_name = "xception"
+            self.model_init()
+            self.model_name = "xception_" + self.model_name
         self.len_init()
 
-
-    def cnn_init(self):
-        self.param_init()
-        self.create_generators()
-        self.make_callbacks()
-
-    def xception_init(self):
+    def model_init(self):
         self.param_init()
         self.create_generators()
         self.make_callbacks()

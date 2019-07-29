@@ -49,9 +49,8 @@ def model_predict(img_path, model):
     top_3_text = '<br>'.join([f'{name}: {percent:.2f}%' for name, percent in zip(top_3_names, top_3_percent)])
     return top_3_text
 
-
 # home page
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
@@ -66,19 +65,23 @@ def contact():
     return render_template('contact.html')
 
 # prediction page
-@app.route('/predict/', methods=['GET', 'POST'])
+@app.route('/predict', methods=['GET', 'POST'])
 def upload():
-    if request.method == 'GET':
-        
-        f = request.files['file']
-        
+    if request.method == 'POST':
+        print("I started")
+        f = request.files["file"]
+        print(f)
+        print("Grabbed the file: {}".format(f))
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(basepath, 'uploads', secure_filename(f.filename))
+        f.save(file_path)
+        print("Rotating")
         rotate_save(f, file_path)
+        print("predicting")
         preds = model_predict(file_path, model)
-
+        print("predictions: {}".format(preds))
         os.remove(file_path)
-        return render_template('predict.html', data=preds)
+        return preds
     return None
 
 
@@ -94,6 +97,6 @@ if __name__ == '__main__':
                 class_names = np.array(pickle.load(f))
     
     with open('../pickles/class_names_gen1_grouped.p', 'rb') as f:
-                class_names = np.array(pickle.load(f))
+                class_names_grouped = np.array(pickle.load(f))
 
     app.run(host='0.0.0.0', port=8080, threaded=True, debug=False)

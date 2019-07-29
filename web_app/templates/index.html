@@ -18,7 +18,7 @@
     <link href="../static/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="../static/css/starter-template.css" rel="stylesheet">
+    <link href="../static/css/bootstraptheme.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -32,44 +32,61 @@
   </head>
 
   <body>
-
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">Who's That Pokemon?</a>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">Who's That Pokemon?</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarColor02">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/about">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contact">Contact</a>
+          </li>
+        </ul>
       </div>
     </nav>
 
     
-    <div class="input-group mb-3">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Upload</span>
+    <div class="jumbotron">
+      <h1 class="display-3">So you found a Pokemon you don't know the name of</h1>
+      <p class="lead">This website exists to remedy that problem (with a 30% accuracy!)</p>
+      <hr class="my-4">
+      <p>Upload or take a photo of a Pokemon by clicking the button below</p>
+      <form id="upload-file" method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}" name="img-form">
+        <label for="imageUpload" class="upload-label">Choose That Pokemon!</label>
+        <input type="file" name="file" id="imageUpload">
+        <!--
+        <div class="form-group">
+          <label for="imageUpload" class="upload-label">Choose That Pokemon!</label>
+          <input type="file" name="file" id="imageUpload" aria-describedby="fileHelp">
+          <small id="fileHelp" class="form-text text-muted">Choose or take a photo of a Pokemon and my network will attempt to classify it for you!</small>
+        </div>
+        -->
+      </form>
+      <div class="image-section" style="display:none;">
+        <div class="img-preview">
+            <div id="imagePreview">
+            </div>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary btn-md" id="btn-predict">Who's That Pokemon?</button>
+        </div>
       </div>
-      <div class="custom-file">
-        <input type="file" name="predict_img" class="custom-file-input" id="predict_img" accept=".jpg, .jpeg, .png">
-        <label class="custom-file-label" for="inputGroupFile01">Choose That Pokemon!</label>
-      </div>
-    </div>
-    
 
-    <div>
-      <a type="button" href="/predict" class="btn btn-primary btn-lrg" id="predict_btn">Who's That Pokemon?</a>
+      <div class="loader" style="font-size: 3vh; display: none;"></div>
+
+      <h3 id="result" style='font-family: Raleway; font-size:2.6vh;'>
+          <span> </span>
+      </h3>
     </div>
-    
+  
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -80,4 +97,9 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="../static/js/ie10-viewport-bug-workaround.js"></script>
   </body>
+
+  <footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="text/javascript"></script>
+  </footer>
+
 </html>

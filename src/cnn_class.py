@@ -25,11 +25,12 @@ class PokemonCNN(object):
     def __init__(self, train_path, val_path, test_path, model_name=None, model_type="CNN", weight_path=None, s3_save=False):
         '''
         Input:
-            Files paths for your train/val/test files (or train/test/holdout, whatever you want to call it, I'm not your mother)
-            model_name = str, this should generally be defined whenver you instantiate this object because it's good practice and keeps things organized
+            Files paths for your train/val/test files 
+            (or train/test/holdout, whatever you want to call it, I'm not your mother)
+            model_name = str, this should generally be defined whenver you instantiate this object
             model_type = will always do regular CNN unless "xception" (any case) is defined
             weight_path = when model_type is CNN this will load custom weights onto the architecture before compiling the model
-            s3_save = boolean on whether or not to save the analytics locally or on the s3 bucket (often only used when training on EC2 instances)
+            s3_save = boolean on whether or not to save the analytics locally or on the s3 bucket 
         '''
         self.weight_path = weight_path
         self.model_name = model_name
@@ -90,12 +91,18 @@ class PokemonCNN(object):
         if self.xception:
             self.build_xception_model()
         else:
-            self.build_cnn_model(kernel_size=kernel_size, pool_size=pool_size, dropout_perc=dropout_perc, num_blocks=num_blocks, custom_weights=custom_weights)
+            self.build_cnn_model(
+                kernel_size=kernel_size,
+                pool_size=pool_size, 
+                dropout_perc=dropout_perc, 
+                num_blocks=num_blocks, 
+                custom_weights=custom_weights)
 
     def create_generators(self, augmentation_strength=0.4):
         '''
         Input:
-            augmentation_strength: float between 0 and 1 (higher numbers = more augmentation, use higher than default if your model tends to overfit)  
+            augmentation_strength: float between 0 and 1 (higher numbers = more augmentation 
+                                    use higher than default if your model tends to overfit)  
         '''
         if self.xception:
             train_datagen = ImageDataGenerator(rescale=1. / 255,
@@ -195,9 +202,17 @@ class PokemonCNN(object):
 
         for block_num in range(num_blocks):
             filter_augmentation = 32 * (block_num + 1)
-            self.model.add(SeparableConv2D(self.nb_filters+filter_augmentation, (kernel_size[0], kernel_size[1]), padding='same', name="sepconv1_b{}".format(block_num +2))) #3rd conv. layer
+            self.model.add(SeparableConv2D(
+                self.nb_filters+filter_augmentation, 
+                (kernel_size[0], kernel_size[1]), 
+                padding='same', 
+                name="sepconv1_b{}".format(block_num +2))) #3rd conv. layer
             self.model.add(Activation(activation_func, name="act1_b{}".format(block_num +2)))
-            self.model.add(SeparableConv2D(self.nb_filters+filter_augmentation, (kernel_size[0], kernel_size[1]), padding='same', name="sepconv2_b{}".format(block_num +2))) #4th conv. layer
+            self.model.add(SeparableConv2D(
+                self.nb_filters+filter_augmentation, 
+                (kernel_size[0], kernel_size[1]), 
+                padding='same', 
+                name="sepconv2_b{}".format(block_num +2))) #4th conv. layer
             self.model.add(Activation(activation_func, name="act2_b{}".format(block_num +2)))
             self.model.add(MaxPooling2D(pool_size=pool_size, name="maxpool_b{}".format(block_num + 2)))
             self.model.add(Dropout(dropout_perc, name="dropout_b{}".format(block_num + 2)))
@@ -212,7 +227,12 @@ class PokemonCNN(object):
         self.model.add(Activation('softmax', name="act2_blockfinal")) # keep softmax at end to pick between classes 0-148
         if self.weight_path is not None:
             self.model.load_weights(self.weight_path, by_name=True, skip_mismatch=True)
-        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy', self.top_3_accuracy, self.top_5_accuracy])
+        self.model.compile(
+            loss='categorical_crossentropy', 
+            optimizer='adam', 
+            metrics=['accuracy', 
+            self.top_3_accuracy, 
+            self.top_5_accuracy])
 
     def top_3_accuracy(self, y_true, y_pred):
         return metrics.top_k_categorical_accuracy(y_true, y_pred, k=3)
@@ -231,7 +251,12 @@ class PokemonCNN(object):
             layer.trainable = False
         for layer in self.model.layers[-2:]:
             layer.trainable = True
-        self.model.compile(optimizer='nadam', loss='categorical_crossentropy', metrics=['accuracy', self.top_3_accuracy, self.top_5_accuracy])
+        self.model.compile(
+            optimizer='nadam', 
+            loss='categorical_crossentropy', 
+            metrics=['accuracy', 
+            self.top_3_accuracy, 
+            self.top_5_accuracy])
 
     def len_init(self):
         self.n_train = sum(len(files) for _, _, files in os.walk(self.train_path))  # number of training samples
@@ -286,7 +311,8 @@ class PokemonCNN(object):
 
 class CNNAnalytics(PokemonCNN):
     '''
-    This class is made to inherit a PokemonCNN model and do all evalutaion and metric saving. It also makes the code a bit cleaner for the above class
+    This class is made to inherit a PokemonCNN model and do all evalutaion and metric saving.
+    It also makes the code a bit cleaner for the above class
     '''
 
     def evaluate_model(self):

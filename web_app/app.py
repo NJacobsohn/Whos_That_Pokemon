@@ -3,6 +3,7 @@ import os
 from werkzeug.utils import secure_filename
 from PIL import Image, ExifTags
 import numpy as np
+from gevent.pywsgi import WSGIServer
 from keras.preprocessing.image import img_to_array, load_img
 from keras.models import load_model
 from keras.metrics import top_k_categorical_accuracy
@@ -94,4 +95,8 @@ if __name__ == '__main__':
     with open('pickles/class_names_gen1_grouped.p', 'rb') as f:
                 class_names_grouped = np.array(pickle.load(f))
 
-    app.run(host='0.0.0.0', port=8080, threaded=True, debug=False)
+    #app.run(host='0.0.0.0', port=8080, threaded=True, debug=False)
+    
+    # serve app with WSGI because it handles production environments and high traffic better
+    http_server = WSGIServer(('0.0.0.0',8080), app)
+    http_server.serve_forever()

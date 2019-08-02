@@ -1,3 +1,7 @@
+"""
+THIS CODE IS VERY VERY DEPRECATED, ALL CONTENTS AND FUNCTIONS WERE MOVED INTO cnn_class.py INSTEAD
+"""
+
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten, SpatialDropout2D
 from keras.layers import Convolution2D, MaxPooling2D, BatchNormalization, SeparableConv2D
@@ -12,6 +16,9 @@ import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+"""
+THIS CODE IS VERY VERY DEPRECATED, ALL CONTENTS AND FUNCTIONS WERE MOVED INTO cnn_class.py INSTEAD
+"""
 
 def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filters = 16, pool_size = (2, 2), kernel_size = (3, 3)):
     """
@@ -75,6 +82,9 @@ def build_cnn(input_shape=(64, 64, 3), nb_classes = 149, neurons = 32, nb_filter
     return model
 # optimizers: 'adam', 'adadelta', 'sgd'
 # activation functions: 'linear', 'sigmoid', 'tanh', 'relu', 'softplus', 'softsign'
+"""
+THIS CODE IS VERY VERY DEPRECATED, ALL CONTENTS AND FUNCTIONS WERE MOVED INTO cnn_class.py INSTEAD
+"""
 
 def create_data_generators(input_shape=(64, 64), batch_size=64):
     train_datagen = ImageDataGenerator(
@@ -140,7 +150,9 @@ def predict_classes(model, test_generator, n_test, batch_size, metrics_path):
     with open(metrics_path + "_cr.txt", 'w') as f:
         f.write(repr(class_report))
 
-
+"""
+THIS CODE IS VERY VERY DEPRECATED, ALL CONTENTS AND FUNCTIONS WERE MOVED INTO cnn_class.py INSTEAD
+"""
 
 
 

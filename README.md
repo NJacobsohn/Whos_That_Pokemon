@@ -9,9 +9,10 @@
 3. [Data](#cleaning)
 4. [Setup](#setup)
 5. [Visualization](#visualization)
-6. [Conclusion](#conclusion)
-7. [What's Next?](#what's-next?)
-8. [Photo and Data Credits](#photo-and-data-credits)
+6. [The Website](#the-website)
+7. [Conclusion](#conclusion)
+8. [What's Next?](#what's-next?)
+9. [Photo and Data Credits](#photo-and-data-credits)
 
 ## **Overview**
 
@@ -142,6 +143,14 @@ Vileplume                  |  Slowpoke
 Pinsir                  |  Nidoqueen
 :-------------------------:|:-------------------------:
 ![pinsir](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/pinsir.png)  |  ![nidoqueen](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/nidoqueen.png)
+
+## **The Website**
+
+I build a flask app and put it into a Docker container to allow for easy deployment. The application allows you to upload an image (ideally of a 1st generation Pokemon) and my model will classify it for you. Below is a screenshot of the homepage and what a prediction might look like.
+
+![homepage](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/homepage.png)
+
+![prediction](https://github.com/NJacobsohn/Whos_That_Pokemon/blob/master/img/prediction.png)
 
 ## **Conclusion**
 
